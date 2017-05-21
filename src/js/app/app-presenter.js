@@ -42,6 +42,14 @@ class Presenter {
 			city.item.addEventListener('mouseout', function () {
 				city.marker.classList.remove('marker-hovered');
 			});
+
+			city.marker.addEventListener('mouseover', function () {
+				city.item.classList.add('item-hovered');
+			});
+
+			city.marker.addEventListener('mouseout', function () {
+				city.item.classList.remove('item-hovered');
+			});
 		});
 
 		this.bindHandlers();
