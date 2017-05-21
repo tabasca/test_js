@@ -1,5 +1,7 @@
 import 'whatwg-fetch';
 
+import App from './app/app-view';
+
 (function () {
 
 	window.fetch('/data/data.json')
@@ -10,11 +12,11 @@ import 'whatwg-fetch';
 			throw new Error('Network response was not ok.');
 		})
 		.then(function (data) {
-			//Application.data = data;
-			console.log(data);
+			App.data = data;
+			App.renderApp();
 		})
 		.catch(function (err) {
-			console.log('Error! - ' + err.message);
+			App.showError(err);
 		});
 
 })();
