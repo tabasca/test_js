@@ -1,0 +1,30 @@
+{
+  "name": "test",
+  "version": "0.0.1",
+  "description": "Тестовое задание на позицию JS-разработчика",
+  "scripts": {
+    "test": "eslint ."
+  },
+  "author": "",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "babel-eslint": "7.1.0",
+    "babel-loader": "^6.2.8",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-register": "6.18.0",
+    "browser-sync": "2.17.5",
+    "del": "^2.2.2",
+    "gulp": "3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-mocha": "3.0.1",
+    "gulp-plumber": "1.1.0",
+    "gulp-rename": "1.2.2",
+    "gulp-sourcemaps": "^2.2.0",
+    "gulp-webpack": "^1.5.0"
+  }
+}
