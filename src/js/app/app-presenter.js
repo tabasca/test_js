@@ -39,6 +39,8 @@ class Presenter {
 
 		new ListDragZone(containerForCities);
 		new ListDropTarget(containerForCities);
+
+		new ListDragZone(containerForSelectedCities);
 		new ListDropTarget(containerForSelectedCities);
 
 	}
