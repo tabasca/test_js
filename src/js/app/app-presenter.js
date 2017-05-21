@@ -3,14 +3,20 @@ import App from './app-view';
 import ListItemView from './list-item-view';
 import Map from './map';
 
+//draganddrop in OOP from learnjavascript.ru
+import DragManager from '../dragndrop/DragManager';
+import ListDragZone from '../dragndrop/ListDragZone';
+import ListDropTarget from '../dragndrop/ListDropTarget';
+
 let AppModel;
+let containerForCities;
 
 class Presenter {
 
 	init() {
 		AppModel = new Model(App.data);
 
-		let containerForData = document.getElementById('cities');
+		containerForCities = document.getElementById('cities');
 
 		let cities = App.data;
 
@@ -19,11 +25,18 @@ class Presenter {
 		cities.map(function (city) {
 			let item = new ListItemView(city);
 
-			containerForData.appendChild(item.elem);
+			containerForCities.appendChild(item.elem);
 			AppMap.addMarkers(city.location);
 		});
 
+		this.addDragAndDrop();
 
+	}
+
+	addDragAndDrop() {
+
+		new ListDragZone(containerForCities);
+		new ListDropTarget(containerForCities);
 
 	}
 
