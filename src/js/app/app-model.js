@@ -5,6 +5,8 @@ export default class Model {
 	constructor(data) {
 		this._data = completeAssign({}, data);
 		this._state = completeAssign({}, initialState);
+
+		this.cities = [];
 	}
 
 	get state() {
@@ -14,6 +16,5 @@ export default class Model {
 	get data() {
 		return this._data;
 	}
-
 
 }

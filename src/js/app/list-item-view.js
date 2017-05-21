@@ -8,7 +8,7 @@ export default class ListItemView {
 	get elem() {
 		if (!this._elem) {
 			this._elem = getElementFromTemplate(this.getMarkup());
-			//this.bindHandlers();
+			// this.bindHandlers();
 		}
 
 		return this._elem;

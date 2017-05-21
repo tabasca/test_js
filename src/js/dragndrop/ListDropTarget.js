@@ -1,3 +1,5 @@
+
+
 import DropTarget from './DropTarget';
 import { isDescendant, findAncestor } from '../utils';
 
@@ -33,6 +35,16 @@ export default class ListDropTarget extends DropTarget {
 		let item = avatar._dragZoneElem.cloneNode(true);
 
 		destination.appendChild(item);
+		avatar.city.item = item;
+
+		avatar.city.item.addEventListener('mouseover', function () {
+			avatar.city.marker.classList.add('marker-hovered');
+		});
+
+		avatar.city.item.addEventListener('mouseout', function () {
+			avatar.city.marker.classList.remove('marker-hovered');
+		});
+
 		avatar._dragZoneElem.remove();
 
 		this.isReplacementDenied = true;

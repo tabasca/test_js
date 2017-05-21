@@ -216,3 +216,8 @@ input[type=radio]:checked + .radiogroup-item {
   background-color: rgb(117, 224, 187);
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.6);
 }
+
+.marker-hovered {
+  background-color: rgb(0, 0, 0);
+  box-shadow: 0 0 20px 0 rgb(120, 120, 0);
+}

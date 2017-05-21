@@ -82,7 +82,6 @@ export default class DropTarget {
 	 * Вход аватара в DropTarget
 	 */
 	onDragEnter(fromDropTarget, avatar, event) {
-		console.log('fromDropTarget: ', fromDropTarget);
 		this.isReplacementDenied = false;
 
 		if (fromDropTarget) {
@@ -95,9 +94,6 @@ export default class DropTarget {
 	 * Выход аватара из DropTarget
 	 */
 	onDragLeave(toDropTarget, avatar, event) {
-
-		console.log('toDropTarget: ', toDropTarget);
-
 		this._hideHoverIndication();
 		this._targetElem = null;
 	}

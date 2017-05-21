@@ -5,15 +5,19 @@ export default class Map {
 		this.map = L.mapbox.map('map', 'mapbox.streets')
 			.setView([50, 90], 3);
 
-		this.addMarkers = this.addMarkers.bind(this);
+		this.addMarker = this.addMarker.bind(this);
 	}
 
-	addMarkers(location) {
+	addMarker(city) {
 
-		let marker = L.divIcon({className: 'marker'});
+		let markerTemplate = L.divIcon({className: 'marker'});
 
-		L.marker([location.lat, location.lng], {
-			icon: marker
+		this._marker = L.marker([city.location.lat, city.location.lng], {
+			icon: markerTemplate
 		}).addTo(this.map);
+	}
+
+	get marker() {
+		return this._marker;
 	}
 }
