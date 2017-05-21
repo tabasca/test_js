@@ -82,7 +82,7 @@ gulp.task('serve', ['assemble'], function () {
 		ui: false
 	});
 
-	gulp.watch('*.html').on('change', (e) => {
+	gulp.watch(SOURCES_DIR + '*.html').on('change', (e) => {
 		if (e.type !== 'deleted') {
 			gulp.start('copy-html');
 		}
