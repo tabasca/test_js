@@ -12,6 +12,8 @@ export default class DropTarget {
 		 * Подэлемент, над которым в настоящий момент находится аватар
 		 */
 		this._targetElem = null;
+
+		this._transferItem = this._transferItem.bind(this);
 	}
 
 	/**
@@ -36,6 +38,10 @@ export default class DropTarget {
 	 * Вызывается, когда аватар пришел на новый this._targetElem
 	 */
 	_showHoverIndication(avatar) {
+		/* override */
+	}
+
+	_transferItem(avatar) {
 		/* override */
 	}
 
@@ -75,7 +81,13 @@ export default class DropTarget {
 	/**
 	 * Вход аватара в DropTarget
 	 */
-	onDragEnter(fromDropTarget, avatar, even) {
+	onDragEnter(fromDropTarget, avatar, event) {
+		console.log('fromDropTarget: ', fromDropTarget);
+		this.isReplacementDenied = false;
+
+		if (fromDropTarget) {
+			this._transferItem(avatar);
+		}
 
 	}
 
@@ -83,6 +95,9 @@ export default class DropTarget {
 	 * Выход аватара из DropTarget
 	 */
 	onDragLeave(toDropTarget, avatar, event) {
+
+		console.log('toDropTarget: ', toDropTarget);
+
 		this._hideHoverIndication();
 		this._targetElem = null;
 	}

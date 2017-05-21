@@ -35,8 +35,11 @@ class Presenter {
 
 	addDragAndDrop() {
 
+		let containerForSelectedCities = document.querySelector('.cities-selected');
+
 		new ListDragZone(containerForCities);
 		new ListDropTarget(containerForCities);
+		new ListDropTarget(containerForSelectedCities);
 
 	}
 

@@ -14,6 +14,30 @@ export default class ListDropTarget extends DropTarget {
 		this._targetElem && this._targetElem.classList.remove('hover');
 	}
 
+	_transferItem(avatar) {
+
+		let destination = avatar._currentTargetElem;
+
+		if (!destination.classList.contains('cities')) {
+
+			let newDestination = findAncestor(destination, 'cities');
+
+			if (newDestination) {
+				destination = newDestination;
+			} else {
+				throw new Error('invalid destination');
+			}
+
+		}
+
+		let item = avatar._dragZoneElem.cloneNode(true);
+
+		destination.appendChild(item);
+		avatar._dragZoneElem.remove();
+
+		this.isReplacementDenied = true;
+	}
+
 	_getTargetElem(avatar, event) {
 		var target = avatar.getTargetElem();
 
@@ -29,13 +53,11 @@ export default class ListDropTarget extends DropTarget {
 			target = findAncestor(target, 'list-item');
 		}
 
-		console.log(target);
-
 		return target;
 	}
 
 	onDragEnd(avatar, event) {
-		if (!this._targetElem) {
+		if (!this._targetElem || this.isReplacementDenied) {
 			// перенос закончился вне подходящей точки приземления
 			avatar.onDragCancel();
 			return;
