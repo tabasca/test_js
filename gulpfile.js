@@ -23,11 +23,14 @@ gulp.task('scripts', function () {
 			devtool:'source-map',
 			module: {
 				loaders: [
-					{ test: /\.js$/,
+					{
+						test: /\.js$/,
+						exclude: /(node_modules)/,
 						loader: 'babel-loader',
 						query: {
 							presets: ['es2015']
-						}},
+						}
+					},
 				],
 			},
 			output:{

@@ -205,3 +205,12 @@ input[type=radio]:checked + .radiogroup-item {
   text-decoration: underline;
   text-decoration-style: dotted;
 }
+
+.marker {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+
+  background-color: rgb(117, 224, 187);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.6);
+}
