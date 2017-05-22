@@ -20,4 +20,14 @@ export default class Map {
 	get marker() {
 		return this._marker;
 	}
+
+	onMarkerHover(marker, listItem) {
+		marker.addEventListener('mouseover', function () {
+			listItem.classList.add('item-hovered');
+		});
+
+		marker.addEventListener('mouseout', function () {
+			listItem.classList.remove('item-hovered');
+		});
+	}
 }

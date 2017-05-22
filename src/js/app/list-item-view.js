@@ -8,7 +8,7 @@ export default class ListItemView {
 	get elem() {
 		if (!this._elem) {
 			this._elem = getElementFromTemplate(this.getMarkup());
-			// this.bindHandlers();
+			this.bindHandlers();
 		}
 
 		return this._elem;
@@ -42,7 +42,21 @@ export default class ListItemView {
 		    <div class="list-item-features">
 		      ${this.getFeatures(featuresArr)}
 		    </div>
-		  </article>`
+		  </article>`;
+	}
+
+	onItemHover(marker) {
+		this._elem.addEventListener('mouseover', function () {
+			marker.classList.add('marker-hovered');
+		});
+
+		this._elem.addEventListener('mouseout', function () {
+			marker.classList.remove('marker-hovered');
+		});
+	}
+
+	bindHandlers() {
+
 
 	}
 }

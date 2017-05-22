@@ -1,3 +1,6 @@
 export const initialState = {
-	item: '0'
+	selectedCity: {
+		elem: '',
+		marker: ''
+	}
 };

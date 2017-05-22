@@ -8,6 +8,7 @@ import ListDragZone from '../dragndrop/ListDragZone';
 import ListDropTarget from '../dragndrop/ListDropTarget';
 
 let AppModel;
+let AppMap;
 let containerForCities;
 
 let dragZone, avatar, dropTarget;
@@ -22,7 +23,7 @@ class Presenter {
 
 		let cities = App.data;
 
-		let AppMap = new Map();
+		AppMap = new Map();
 
 		cities.map(function (city) {
 			let item = new ListItemView(city);
@@ -30,26 +31,13 @@ class Presenter {
 			containerForCities.appendChild(item.elem);
 			AppMap.addMarker(city);
 
-			city.item = item.elem;
+			item.onItemHover(AppMap._marker._icon);
+			AppMap.onMarkerHover(AppMap._marker._icon, item.elem);
+
 			city.marker = AppMap._marker._icon;
+			city.elem = item.elem;
 
 			AppModel.cities.push(city);
-
-			city.item.addEventListener('mouseover', function () {
-				city.marker.classList.add('marker-hovered');
-			});
-
-			city.item.addEventListener('mouseout', function () {
-				city.marker.classList.remove('marker-hovered');
-			});
-
-			city.marker.addEventListener('mouseover', function () {
-				city.item.classList.add('item-hovered');
-			});
-
-			city.marker.addEventListener('mouseout', function () {
-				city.item.classList.remove('item-hovered');
-			});
 		});
 
 		this.bindHandlers();
@@ -98,14 +86,6 @@ class Presenter {
 			// попробовать захватить элемент
 			avatar = dragZone.onDragStart(downX, downY, e);
 
-			AppModel.cities.map(function (city) {
-
-				if (city.item == avatar._dragZoneElem) {
-					avatar.city = city;
-				}
-
-			});
-
 			if (!avatar) { // не получилось, значит перенос продолжать нельзя
 				this.cleanUp(); // очистить приватные переменные, связанные с переносом
 				return;
@@ -121,9 +101,22 @@ class Presenter {
 		var newDropTarget = this.findDropTarget(e);
 
 		if (newDropTarget != dropTarget) {
+
+			let callback = () => {
+				AppModel.selectCity(avatar._dragZoneElem);
+
+				return AppModel._state.selectedCity;
+			};
+
+			let callbackToAddHover = (item) => {
+
+				AppMap.onMarkerHover(AppModel._state.selectedCity.marker, item._elem);
+
+			};
+
 			// уведомить старую и новую зоны-цели о том, что с них ушли/на них зашли
 			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, e);
-			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e);
+			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e, callback, callbackToAddHover);
 		}
 
 		dropTarget = newDropTarget;

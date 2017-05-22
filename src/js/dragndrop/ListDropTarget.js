@@ -1,5 +1,5 @@
 
-
+import ListItemView from '../app/list-item-view';
 import DropTarget from './DropTarget';
 import { isDescendant, findAncestor } from '../utils';
 
@@ -16,7 +16,7 @@ export default class ListDropTarget extends DropTarget {
 		this._targetElem && this._targetElem.classList.remove('hover');
 	}
 
-	_transferItem(avatar) {
+	_transferItem(avatar, city) {
 
 		let destination = avatar._currentTargetElem;
 
@@ -32,22 +32,18 @@ export default class ListDropTarget extends DropTarget {
 
 		}
 
-		let item = avatar._dragZoneElem.cloneNode(true);
+		let item = new ListItemView(city);
+		city.elem = item.elem;
 
-		destination.appendChild(item);
-		avatar.city.item = item;
+		destination.appendChild(item.elem);
 
-		avatar.city.item.addEventListener('mouseover', function () {
-			avatar.city.marker.classList.add('marker-hovered');
-		});
-
-		avatar.city.item.addEventListener('mouseout', function () {
-			avatar.city.marker.classList.remove('marker-hovered');
-		});
+		item.onItemHover(city.marker);
 
 		avatar._dragZoneElem.remove();
 
 		this.isReplacementDenied = true;
+
+		return item;
 	}
 
 	_getTargetElem(avatar, event) {
