@@ -23,25 +23,17 @@ export default class Model {
 		return this._data;
 	}
 
-	selectCity(item) {
+	selectCity(city) {
 
-		this.getSelectedCityData(item);
+		this._state.selectedCity = completeAssign({}, city);
 
 		this.selectedCities.push(this._state.selectedCity);
 
 	}
 
-	getSelectedCityData(item) {
+	updateSelectedCityDOMelem(newItem) {
 
-		let that = this;
-
-		this.cities.forEach(function (city) {
-			if (city.elem == item) {
-
-				that._state.selectedCity = completeAssign({}, city);
-
-			}
-		});
+		this._state.selectedCity.listItem.elem = newItem;
 
 	}
 

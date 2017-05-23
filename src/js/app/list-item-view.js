@@ -14,6 +14,10 @@ export default class ListItemView {
 		return this._elem;
 	}
 
+	set elem(data) {
+		return this._elem = data;
+	}
+
 	getFeatures(list) {
 
 		let feature = '';
@@ -45,18 +49,30 @@ export default class ListItemView {
 		  </article>`;
 	}
 
-	onItemHover(marker) {
-		this._elem.addEventListener('mouseover', function () {
-			marker.classList.add('marker-hovered');
-		});
+	onItemMouseover() {
+		this.marker.classList.add('marker-hovered');
+	}
 
-		this._elem.addEventListener('mouseout', function () {
-			marker.classList.remove('marker-hovered');
-		});
+	onItemMouseout() {
+		this.marker.classList.remove('marker-hovered');
+	}
+
+	bindOnItemHover() {
+		this._elem.addEventListener('mouseover', this.onItemMouseover);
+		this._elem.addEventListener('mouseout', this.onItemMouseout);
+	}
+
+	removeItem() {
+		this._elem.removeEventListener('mouseover', this.onItemMouseover);
+		this._elem.removeEventListener('mouseout', this.onItemMouseout);
+
+		this._elem.remove();
 	}
 
 	bindHandlers() {
-
-
+		this.onItemMouseover = this.onItemMouseover.bind(this);
+		this.onItemMouseout = this.onItemMouseout.bind(this);
+		this.bindOnItemHover = this.bindOnItemHover.bind(this);
+		this.removeItem = this.removeItem.bind(this);
 	}
 }

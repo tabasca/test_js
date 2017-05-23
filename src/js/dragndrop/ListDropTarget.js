@@ -33,17 +33,18 @@ export default class ListDropTarget extends DropTarget {
 		}
 
 		let item = new ListItemView(city);
-		city.elem = item.elem;
 
+		item.marker = city.listItem.marker;
 		destination.appendChild(item.elem);
 
-		item.onItemHover(city.marker);
+		item.bindOnItemHover();
 
-		avatar._dragZoneElem.remove();
+		city.listItem.removeItem();
+		city.listItem = item;
 
 		this.isReplacementDenied = true;
 
-		return item;
+		return city;
 	}
 
 	_getTargetElem(avatar, event) {

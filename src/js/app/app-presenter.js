@@ -31,11 +31,12 @@ class Presenter {
 			containerForCities.appendChild(item.elem);
 			AppMap.addMarker(city);
 
-			item.onItemHover(AppMap._marker._icon);
+			item.marker = AppMap._marker._icon;
+
+			item.bindOnItemHover();
 			AppMap.onMarkerHover(AppMap._marker._icon, item.elem);
 
-			city.marker = AppMap._marker._icon;
-			city.elem = item.elem;
+			city.listItem = item;
 
 			AppModel.cities.push(city);
 		});
@@ -86,6 +87,12 @@ class Presenter {
 			// попробовать захватить элемент
 			avatar = dragZone.onDragStart(downX, downY, e);
 
+			AppModel.cities.map(function (city) {
+				if(city.listItem.elem === avatar._dragZoneElem) {
+					AppModel.selectCity(city);
+				}
+			});
+
 			if (!avatar) { // не получилось, значит перенос продолжать нельзя
 				this.cleanUp(); // очистить приватные переменные, связанные с переносом
 				return;
@@ -103,14 +110,14 @@ class Presenter {
 		if (newDropTarget != dropTarget) {
 
 			let callback = () => {
-				AppModel.selectCity(avatar._dragZoneElem);
+				AppModel.updateSelectedCityDOMelem(avatar._dragZoneElem);
 
 				return AppModel._state.selectedCity;
 			};
 
 			let callbackToAddHover = (item) => {
 
-				AppMap.onMarkerHover(AppModel._state.selectedCity.marker, item._elem);
+				AppMap.onMarkerHover(AppModel._state.selectedCity.listItem.marker, item.listItem.elem);
 
 			};
 
@@ -169,7 +176,6 @@ class Presenter {
 		}
 
 		if (!elem.dropTarget) {
-			console.log('no');
 			return null;
 		}
 
