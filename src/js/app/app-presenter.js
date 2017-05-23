@@ -33,8 +33,7 @@ class Presenter {
 
 			item.marker = AppMap._marker._icon;
 
-			item.bindOnItemHover();
-			AppMap.onMarkerHover(AppMap._marker._icon, item.elem);
+			item.bindEvents();
 
 			city.listItem = item;
 
@@ -115,15 +114,9 @@ class Presenter {
 				return AppModel._state.selectedCity;
 			};
 
-			let callbackToAddHover = (item) => {
-
-				AppMap.onMarkerHover(AppModel._state.selectedCity.listItem.marker, item.listItem.elem);
-
-			};
-
 			// уведомить старую и новую зоны-цели о том, что с них ушли/на них зашли
 			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, e);
-			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e, callback, callbackToAddHover);
+			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e, callback);
 		}
 
 		dropTarget = newDropTarget;

@@ -37,7 +37,7 @@ export default class ListDropTarget extends DropTarget {
 		item.marker = city.listItem.marker;
 		destination.appendChild(item.elem);
 
-		item.bindOnItemHover();
+		item.bindEvents();
 
 		city.listItem.removeItem();
 		city.listItem = item;

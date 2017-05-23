@@ -81,22 +81,18 @@ export default class DropTarget {
 	/**
 	 * Вход аватара в DropTarget
 	 */
-	onDragEnter(fromDropTarget, avatar, event, cb1, cb2) {
+	onDragEnter(fromDropTarget, avatar, event, cb) {
 		this.isReplacementDenied = false;
 
 		if (fromDropTarget) {
 
 			let city;
 
-			if (typeof cb1 == 'function') {
-				city = cb1();
+			if (typeof cb == 'function') {
+				city = cb();
 			}
 
 			let item = this._transferItem(avatar, city);
-
-			if (typeof cb2 == 'function') {
-				cb2(item);
-			}
 
 		}
 
