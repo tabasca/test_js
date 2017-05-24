@@ -1,6 +1,7 @@
 export const initialState = {
+	areThereSelectedElems: false,
 	selectedCity: {
 		elem: '',
-		marker: ''
+		listItem: ''
 	}
 };

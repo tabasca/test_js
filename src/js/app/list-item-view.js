@@ -1,24 +1,19 @@
-import { getElementFromTemplate, getCoords } from '../utils';
+import { getElementFromTemplate } from '../utils';
 
 export default class ListItemView {
 	constructor(data) {
 		this.data = data;
-
-		this.popups = [];
 	}
 
 	get elem() {
 		if (!this._elem) {
 			this._elem = getElementFromTemplate(this.getMarkup());
 
-
 			this.onItemMouseover = this.onItemMouseover.bind(this);
 			this.onItemMouseout = this.onItemMouseout.bind(this);
 
 			this.onMarkerMouseover = this.onMarkerMouseover.bind(this);
 			this.onMarkerMouseout = this.onMarkerMouseout.bind(this);
-
-			this.showPopup = this.showPopup.bind(this);
 
 			this.removeItem = this.removeItem.bind(this);
 
@@ -29,6 +24,10 @@ export default class ListItemView {
 
 	set elem(data) {
 		return this._elem = data;
+	}
+
+	set showPopup(handler) {
+		return this._showPopup = handler;
 	}
 
 	getFeatures(list) {
@@ -78,40 +77,12 @@ export default class ListItemView {
 				</div>`;
 	}
 
-	getMarkerPosition() {
-		return getCoords(this.marker);
-	}
-
 	onItemMouseover() {
 		this.marker.classList.add('marker-hovered');
 	}
 
 	onItemMouseout() {
 		this.marker.classList.remove('marker-hovered');
-	}
-
-	initPopup() {
-		this.popup = getElementFromTemplate(this.getPopupMarkup());
-		document.body.appendChild(this.popup);
-
-		let popupCoords = this.getMarkerPosition();
-		this.popup.style.left = popupCoords.left + 'px';
-		this.popup.style.top = popupCoords.top + 'px';
-	}
-
-	showPopup() {
-
-		this.destroyPopups();
-
-		this.initPopup();
-	}
-
-	destroyPopups() {
-
-		if (document.querySelector('.popup')) {
-			document.querySelector('.popup').remove();
-		}
-
 	}
 
 	onMarkerMouseover() {
@@ -129,8 +100,8 @@ export default class ListItemView {
 		this.marker.addEventListener('mouseover', this.onMarkerMouseover);
 		this.marker.addEventListener('mouseout', this.onMarkerMouseout);
 
-		this._elem.addEventListener('click', this.showPopup);
-		this.marker.addEventListener('click', this.showPopup);
+		this._elem.addEventListener('click', this._showPopup);
+		this.marker.addEventListener('click', this._showPopup);
 	}
 
 	unbindEvents() {
@@ -140,8 +111,8 @@ export default class ListItemView {
 		this.marker.removeEventListener('mouseover', this.onMarkerMouseover);
 		this.marker.removeEventListener('mouseout', this.onMarkerMouseout);
 
-		this._elem.removeEventListener('click', this.showPopup);
-		this.marker.removeEventListener('click', this.showPopup);
+		this._elem.removeEventListener('click', this._showPopup);
+		this.marker.removeEventListener('click', this._showPopup);
 	}
 
 	removeItem() {

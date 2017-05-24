@@ -1,8 +1,10 @@
 import 'whatwg-fetch';
 
-import App from './app/app-view';
+import AppView from './app/app-view';
 
 (function () {
+
+	let App = new AppView();
 
 	window.fetch('/data/data.json')
 		.then(function (response) {
@@ -14,9 +16,11 @@ import App from './app/app-view';
 		.then(function (data) {
 			App.data = data;
 			App.renderApp();
-		})
-		.catch(function (err) {
-			App.showError(err);
 		});
+
+
+		// .catch(function (err) {
+		// 	App.showError(err);
+		// });
 
 })();

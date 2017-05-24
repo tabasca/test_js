@@ -1,7 +1,7 @@
 import Model from './app-model';
-import App from './app-view';
 import ListItemView from './list-item-view';
 import Map from './map';
+import { getCoords, getElementFromTemplate, findAncestor } from '../utils';
 
 //draganddrop in OOP from learnjavascript.ru
 import ListDragZone from '../dragndrop/ListDragZone';
@@ -9,51 +9,125 @@ import ListDropTarget from '../dragndrop/ListDropTarget';
 
 let AppModel;
 let AppMap;
+let App;
+
 let containerForCities;
+let containerForSelectedCities;
 
 let dragZone, avatar, dropTarget;
 let downX, downY;
 
 class Presenter {
 
-	init() {
+	init(app) {
+		App = app;
 		AppModel = new Model(App.data);
 
 		containerForCities = document.getElementById('cities');
+		containerForSelectedCities = document.querySelector('.cities-selected');
 
 		let cities = App.data;
 
 		AppMap = new Map();
 
-		cities.map(function (city) {
-			let item = new ListItemView(city);
+		this.appendCities(containerForCities);
 
-			containerForCities.appendChild(item.elem);
-			AppMap.addMarker(city);
+		if (AppModel._state.areThereSelectedElems) {
+			this.appendCities(containerForSelectedCities);
+		}
 
-			item.marker = AppMap._marker._icon;
-
-			item.bindEvents();
-
-			city.listItem = item;
-
-			AppModel.cities.push(city);
-		});
+		this.bindHandlers = this.bindHandlers.bind(this);
 
 		this.bindHandlers();
 		this.addDragAndDrop();
 
 	}
 
-	addDragAndDrop() {
+	appendCities(container) {
+		let that = this;
+		App.data.map(function (city) {
+			let item = new ListItemView(city);
 
-		let containerForSelectedCities = document.querySelector('.cities-selected');
+			container.appendChild(item.elem);
+			AppMap.addMarker(city);
+
+			item.marker = AppMap._marker._icon;
+
+			item.showPopup = that.showPopup.bind(that, item);
+
+			item.bindEvents(item);
+			city.listItem = item;
+
+			AppModel.cities.push(city);
+		});
+	}
+
+	getMarkerPosition(item) {
+		return getCoords(item.marker);
+	}
+
+	showPopup(item) {
+
+		if (AppModel.popup) {
+			this.destroyPopup();
+		}
+
+		let popup = getElementFromTemplate(item.getPopupMarkup());
+		document.body.appendChild(popup);
+
+		let popupCoords = this.getMarkerPosition(item);
+		popup.style.left = popupCoords.left + 'px';
+		popup.style.top = popupCoords.top + 'px';
+
+		AppModel.popup = popup;
+	}
+
+	destroyPopup() {
+
+		AppModel.popup.remove();
+
+	}
+
+	addDragAndDrop() {
 
 		new ListDragZone(containerForCities);
 		new ListDropTarget(containerForCities);
 
 		new ListDragZone(containerForSelectedCities);
 		new ListDropTarget(containerForSelectedCities);
+
+	}
+
+	transferItem(avatar) {
+
+		AppModel.updateSelectedCityDOMelem(avatar._dragZoneElem);
+
+		let city = AppModel._state.selectedCity;
+
+		let destination = avatar._currentTargetElem;
+
+		if (!destination.classList.contains('cities')) {
+
+			let newDestination = findAncestor(destination, 'cities');
+
+			if (newDestination) {
+				destination = newDestination;
+			} else {
+				throw new Error('invalid destination');
+			}
+
+		}
+
+		let item = new ListItemView(city);
+
+		item.marker = city.listItem.marker;
+		destination.appendChild(item.elem);
+
+		item.bindEvents();
+
+		city.listItem.removeItem();
+
+		AppModel.updateSelectedCityDOMelem(item);
 
 	}
 
@@ -108,15 +182,16 @@ class Presenter {
 
 		if (newDropTarget != dropTarget) {
 
-			let callback = () => {
-				AppModel.updateSelectedCityDOMelem(avatar._dragZoneElem);
-
-				return AppModel._state.selectedCity;
-			};
-
 			// уведомить старую и новую зоны-цели о том, что с них ушли/на них зашли
 			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, e);
-			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e, callback);
+			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e);
+
+			if (newDropTarget && dropTarget) {
+
+				this.transferItem(avatar);
+
+			}
+
 		}
 
 		dropTarget = newDropTarget;
@@ -177,17 +252,12 @@ class Presenter {
 
 	bindHandlers() {
 
-		this.onMouseDown = this.onMouseDown.bind(this);
-		this.onMouseMove = this.onMouseMove.bind(this);
-		this.onMouseUp = this.onMouseUp.bind(this);
+		App.onMouseMove = this.onMouseMove.bind(this);
+		App.onMouseDown = this.onMouseDown.bind(this);
+		App.onMouseUp = this.onMouseUp.bind(this);
 
-		document.onmousemove = this.onMouseMove;
-		document.onmouseup = this.onMouseUp;
-		document.onmousedown = this.onMouseDown;
+		App.bindEvents();
 
-		document.ondragstart = function () {
-			return false;
-		}
 	}
 
 }

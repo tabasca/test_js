@@ -1,5 +1,3 @@
-
-import ListItemView from '../app/list-item-view';
 import DropTarget from './DropTarget';
 import { isDescendant, findAncestor } from '../utils';
 
@@ -14,37 +12,6 @@ export default class ListDropTarget extends DropTarget {
 
 	_hideHoverIndication() {
 		this._targetElem && this._targetElem.classList.remove('hover');
-	}
-
-	_transferItem(avatar, city) {
-
-		let destination = avatar._currentTargetElem;
-
-		if (!destination.classList.contains('cities')) {
-
-			let newDestination = findAncestor(destination, 'cities');
-
-			if (newDestination) {
-				destination = newDestination;
-			} else {
-				throw new Error('invalid destination');
-			}
-
-		}
-
-		let item = new ListItemView(city);
-
-		item.marker = city.listItem.marker;
-		destination.appendChild(item.elem);
-
-		item.bindEvents();
-
-		city.listItem.removeItem();
-		city.listItem = item;
-
-		this.isReplacementDenied = true;
-
-		return city;
 	}
 
 	_getTargetElem(avatar, event) {
