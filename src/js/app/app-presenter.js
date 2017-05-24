@@ -48,9 +48,9 @@ class Presenter {
 
 		this.clearList();
 
-		let cities = AppModel._cities;
+		let cities = AppModel.cities;
 
-		if (AppModel._state.isFilterEnabled) {
+		if (AppModel.state.isFilterEnabled) {
 
 			cities = AppModel.filteredCities;
 
@@ -58,7 +58,7 @@ class Presenter {
 
 		this.appendCities(containerForCities, cities);
 
-		if (AppModel._state.areThereSelectedElems) {
+		if (AppModel.state.areThereSelectedElems) {
 			this.appendCities(containerForSelectedCities);
 		}
 
@@ -71,7 +71,7 @@ class Presenter {
 		ascFilterBtn.addEventListener('click', function (evt) {
 			evt.preventDefault();
 
-			AppModel._state.isFilterEnabled = !AppModel._state.isFilterEnabled;
+			AppModel.state.isFilterEnabled = !AppModel.state.isFilterEnabled;
 
 			AppModel.sortList();
 
@@ -140,7 +140,7 @@ class Presenter {
 
 		AppModel.updateSelectedCityDOMelem(avatar._dragZoneElem);
 
-		let city = AppModel._state.selectedCity;
+		let city = AppModel.state.selectedCity;
 
 		let destination = avatar._currentTargetElem;
 
