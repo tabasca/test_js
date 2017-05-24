@@ -7,6 +7,11 @@ export default class ListItemView {
 
 	get elem() {
 		if (!this._elem) {
+
+			this.name = this.data.name;
+			this.temperature = this.data.weather;
+			this.featuresArr = this.data.features;
+
 			this._elem = getElementFromTemplate(this.getMarkup());
 
 			this.onItemMouseover = this.onItemMouseover.bind(this);
@@ -45,34 +50,28 @@ export default class ListItemView {
 	}
 
 	getMarkup() {
-		let name = this.data.name;
-		let temperature = this.data.weather;
-		let featuresArr = this.data.features;
 
 		return `<article class="list-item">
 		    <div class="list-item-handle"></div>
 		    <h3 class="list-item-title">
-		      <span class="list-item-name">${name}</span>,
-		      <span class="list-item-weather">${temperature}</span>
+		      <span class="list-item-name">${this.name}</span>,
+		      <span class="list-item-weather">${this.temperature}</span>
 		    </h3>
 		    <div class="list-item-features">
-		      ${this.getFeatures(featuresArr)}
+		      ${this.getFeatures(this.featuresArr)}
 		    </div>
 		  </article>`;
 	}
 
 	getPopupMarkup() {
-		let name = this.data.name;
-		let temperature = this.data.weather;
-		let featuresArr = this.data.features;
 
 		return `<div class="popup" role="popup" aria-labellebby="popup-title">
 				  <h3 class="popup-title" id="popup-title">
-				    <span class="popup-title-name">${name}</span>,
-				    <span class="popup-title-weather">${temperature}</span>
+				    <span class="popup-title-name">${this.name}</span>,
+				    <span class="popup-title-weather">${this.temperature}</span>
 				  </h3>
 				  <div class="popup-features">
-				    ${this.getFeatures(featuresArr)}
+				    ${this.getFeatures(this.featuresArr)}
 				  </div>
 				</div>`;
 	}

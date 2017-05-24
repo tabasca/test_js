@@ -22,30 +22,68 @@ class Presenter {
 	init(app) {
 		App = app;
 		AppModel = new Model(App.data);
+		AppMap = new Map();
 
 		containerForCities = document.getElementById('cities');
 		containerForSelectedCities = document.querySelector('.cities-selected');
 
-		let cities = App.data;
-
-		AppMap = new Map();
-
-		this.appendCities(containerForCities);
-
-		if (AppModel._state.areThereSelectedElems) {
-			this.appendCities(containerForSelectedCities);
-		}
+		this.renderList();
 
 		this.bindHandlers = this.bindHandlers.bind(this);
 
 		this.bindHandlers();
 		this.addDragAndDrop();
 
+		this.initFilters();
 	}
 
-	appendCities(container) {
+	clearList() {
+		AppModel.renderedCities.map(function (city) {
+			city.listItem.removeItem();
+			city.listItem.marker.remove();
+		});
+	}
+
+	renderList() {
+
+		this.clearList();
+
+		let cities = AppModel._cities;
+
+		if (AppModel._state.isFilterEnabled) {
+
+			cities = AppModel.filteredCities;
+
+		}
+
+		this.appendCities(containerForCities, cities);
+
+		if (AppModel._state.areThereSelectedElems) {
+			this.appendCities(containerForSelectedCities);
+		}
+
+	}
+
+	initFilters() {
 		let that = this;
-		App.data.map(function (city) {
+		let ascFilterBtn = document.getElementById('cities-sort-asc');
+
+		ascFilterBtn.addEventListener('click', function (evt) {
+			evt.preventDefault();
+
+			AppModel._state.isFilterEnabled = !AppModel._state.isFilterEnabled;
+
+			AppModel.sortList();
+
+			that.renderList();
+		});
+	}
+
+	appendCities(container, data) {
+		let that = this;
+		AppModel.renderedCities = [];
+
+		data.map(function (city) {
 			let item = new ListItemView(city);
 
 			container.appendChild(item.elem);
@@ -58,7 +96,7 @@ class Presenter {
 			item.bindEvents(item);
 			city.listItem = item;
 
-			AppModel.cities.push(city);
+			AppModel.renderedCities.push(city);
 		});
 	}
 
