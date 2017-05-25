@@ -30,7 +30,7 @@ export default class ListDragAvatar extends DragAvatar {
 	}
 
 	_destroy() {
-		this._elem.parentNode.removeChild(this._elem);
+		this._elem.remove();
 	}
 
 	/**

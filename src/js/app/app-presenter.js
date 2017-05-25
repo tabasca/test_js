@@ -58,7 +58,7 @@ class Presenter {
 
 		this.appendCities(containerForCities, cities);
 
-		if (AppModel.state.areThereSelectedElems) {
+		if (AppModel.citiesInSelectedList.length > 0) {
 			this.appendCities(containerForSelectedCities);
 		}
 
@@ -136,9 +136,7 @@ class Presenter {
 
 	}
 
-	transferItem(avatar) {
-
-		AppModel.updateSelectedCityDOMelem(avatar._dragZoneElem);
+	transferToAnotherList(avatar) {
 
 		let city = AppModel.state.selectedCity;
 
@@ -164,8 +162,37 @@ class Presenter {
 		item.bindEvents();
 
 		city.listItem.removeItem();
+		avatar.onDragEnd();
 
-		AppModel.updateSelectedCityDOMelem(item);
+		AppModel.updateSelectedCityDOMelem(item.elem);
+	}
+
+	transferThroughList(avatar, event) {
+
+		let target = this.findDropTarget(event);
+
+		var avatarInfo = avatar.getDragInfo(event);
+
+		avatar.onDragEnd(); // аватар больше не нужен, перенос успешен
+
+		let contentToReplace = target._targetElem.innerHTML;
+		let contentToMove = avatarInfo.elem.innerHTML;
+
+		target._targetElem.innerHTML = contentToMove;
+		avatarInfo.dragZoneElem.innerHTML = contentToReplace;
+
+		AppModel.updateSelectedCityDOMelem(target._targetElem);
+
+		target._targetElem = null;
+	}
+
+	transferItem(avatar, event) {
+
+		if (AppModel.state.isTransferToAnotherList) {
+			this.transferToAnotherList(avatar);
+		} else {
+			this.transferThroughList(avatar, event);
+		}
 
 	}
 
@@ -198,16 +225,12 @@ class Presenter {
 			// попробовать захватить элемент
 			avatar = dragZone.onDragStart(downX, downY, e);
 
-			AppModel.cities.map(function (city) {
-				if(city.listItem.elem === avatar._dragZoneElem) {
-					AppModel.selectCity(city);
-				}
-			});
-
 			if (!avatar) { // не получилось, значит перенос продолжать нельзя
 				this.cleanUp(); // очистить приватные переменные, связанные с переносом
 				return;
 			}
+
+			AppModel.selectCity(avatar);
 		}
 
 		// отобразить перенос объекта, перевычислить текущий элемент под курсором
@@ -226,6 +249,7 @@ class Presenter {
 
 			if (newDropTarget && dropTarget) {
 
+				AppModel.setCitySelected();
 				this.transferItem(avatar);
 
 			}
@@ -251,6 +275,13 @@ class Presenter {
 				// завершить перенос и избавиться от аватара, если это нужно
 				// эта функция обязана вызвать avatar.onDragEnd/onDragCancel
 				dropTarget.onDragEnd(avatar, e);
+
+				if (AppModel.state.isTransferToAnotherList) {
+					AppModel.endTransfer();
+				} else {
+					this.transferItem(avatar, e);
+				}
+
 			} else {
 				avatar.onDragCancel();
 			}

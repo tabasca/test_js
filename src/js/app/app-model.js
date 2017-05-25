@@ -12,7 +12,12 @@ export default class Model {
 		}
 
 		this.selectedCities = [];
-		this.filteredCities = [];
+
+		this.filteredCities = Object.assign({}, this.cities);
+
+		if (typeof this.filteredCities.map !== "function") {
+			this.filteredCities = Object.keys(this.filteredCities).map(key => this.filteredCities[key]);
+		}
 		this.renderedCities = [];
 
 		this.selectCity = this.selectCity.bind(this);
@@ -27,13 +32,33 @@ export default class Model {
 		return this._cities;
 	}
 
-	selectCity(city) {
+	get citiesInSelectedList() {
+		let that = this;
 
-		this._state.selectedCity = completeAssign({}, city);
-		this._state.areThereSelectedElems = true;
+		this._citiesInSelectedList = [];
 
-		this.selectedCities.push(this._state.selectedCity);
+		this._cities.map(function (city) {
+			if (city.isSelected) {
+				that._citiesInSelectedList.push(city);
+			}
+		});
 
+		return this._citiesInSelectedList;
+	}
+
+	selectCity(avatar) {
+		let that = this;
+
+		this._cities.map(function (city) {
+
+			if(city.listItem.elem.innerHTML === avatar._dragZoneElem.innerHTML) {
+
+				that._state.selectedCity = completeAssign({}, city);
+
+				that.selectedCities.push(that._state.selectedCity);
+
+			}
+		});
 	}
 
 	sortList() {
@@ -45,11 +70,6 @@ export default class Model {
 	}
 
 	sortAlphabetically() {
-		this.filteredCities = Object.assign({}, this.cities);
-
-		if (typeof this.filteredCities.map !== "function") {
-			this.filteredCities = Object.keys(this.filteredCities).map(key => this.filteredCities[key]);
-		}
 
 		this.filteredCities.sort(function (a, b) {
 
@@ -68,7 +88,26 @@ export default class Model {
 		});
 	}
 
+	setCitySelected() {
+		this._state.selectedCity.isSelected = !this._state.selectedCity.isSelected;
+
+		this._state.isTransferToAnotherList = true;
+	}
+
+	endTransfer() {
+		this._state.isTransferToAnotherList = false;
+	}
+
 	updateSelectedCityDOMelem(newItem) {
+
+		let that = this;
+
+		this.filteredCities.map(function (city) {
+			if (city.listItem.elem === newItem) {
+
+				city.listItem.elem = that._state.selectedCity.listItem.elem
+			}
+		});
 
 		this._state.selectedCity.listItem.elem = newItem;
 
