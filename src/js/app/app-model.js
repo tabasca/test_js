@@ -13,14 +13,11 @@ export default class Model {
 
 		this.selectedCities = [];
 
-		this.filteredCities = Object.assign({}, this.cities);
-
-		if (typeof this.filteredCities.map !== "function") {
-			this.filteredCities = Object.keys(this.filteredCities).map(key => this.filteredCities[key]);
-		}
 		this.renderedCities = [];
 
 		this.selectCity = this.selectCity.bind(this);
+
+		this.resetFilteredCities();
 
 	}
 
@@ -46,6 +43,14 @@ export default class Model {
 		return this._citiesInSelectedList;
 	}
 
+	resetFilteredCities() {
+		this.filteredCities = Object.assign({}, this.cities);
+
+		if (typeof this.filteredCities.map !== "function") {
+			this.filteredCities = Object.keys(this.filteredCities).map(key => this.filteredCities[key]);
+		}
+	}
+
 	selectCity(avatar) {
 		let that = this;
 
@@ -61,30 +66,72 @@ export default class Model {
 		});
 	}
 
-	sortList() {
-		if (this._state.isFilterEnabled) {
-			this.sortAlphabetically();
-		} else {
-			this.filteredCities = [];
+	filterList(filterType, filterSymbols) {
+
+		this._state.isFilterEnabled = true;
+
+		switch (filterType) {
+			case 'asc':
+				this.sortAlphabetically('asc');
+				break;
+			case 'desc':
+				this.sortAlphabetically('desc');
+				break;
+			case 'search':
+				this.filterByText(filterSymbols);
+				break;
+			default:
+				this.resetFilteredCities();
 		}
+
 	}
 
-	sortAlphabetically() {
+	sortAlphabetically(filterType) {
 
 		this.filteredCities.sort(function (a, b) {
 
 			let nameA = a.listItem.name.toLowerCase();
 			let nameB = b.listItem.name.toLowerCase();
 
-			if (nameA < nameB) {
-				return -1;
-			}
+			if (filterType === 'asc') {
+				if (nameA < nameB) {
+					return -1;
+				}
 
-			if (nameA > nameB) {
-				return 1;
+				if (nameA > nameB) {
+					return 1;
+				}
+			} else {
+				if (nameA < nameB) {
+					return 1;
+				}
+
+				if (nameA > nameB) {
+					return -1;
+				}
 			}
 
 			return 0;
+		});
+
+	}
+
+	filterByText(text) {
+
+		let that = this;
+
+		if (!text.length) {
+			this.resetFilteredCities();
+
+			return;
+		}
+
+		this.filteredCities = [];
+
+		this._cities.map(function (city) {
+			if (city.listItem.name.toLowerCase().indexOf(text.toLowerCase()) > -1) {
+				that.filteredCities.push(city);
+			}
 		});
 	}
 

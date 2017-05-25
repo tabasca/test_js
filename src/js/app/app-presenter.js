@@ -67,15 +67,36 @@ class Presenter {
 	initFilters() {
 		let that = this;
 		let ascFilterBtn = document.getElementById('cities-sort-asc');
+		let descFilterBtn = document.getElementById('cities-sort-desc');
+
+		let searchInput = document.querySelector('.cities-filters-name');
 
 		ascFilterBtn.addEventListener('click', function (evt) {
 			evt.preventDefault();
 
-			AppModel.state.isFilterEnabled = !AppModel.state.isFilterEnabled;
+			//AppModel.state.isFilterEnabled = !AppModel.state.isFilterEnabled;
 
-			AppModel.sortList();
+			AppModel.filterList('asc');
 
 			that.renderList();
+		});
+
+		descFilterBtn.addEventListener('click', function (evt) {
+			evt.preventDefault();
+
+
+			AppModel.filterList('desc');
+
+			that.renderList();
+		});
+
+		searchInput.addEventListener('input', function (evt) {
+			evt.preventDefault();
+
+			AppModel.filterList('search', this.value);
+
+			that.renderList();
+
 		});
 	}
 
