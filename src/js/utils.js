@@ -81,7 +81,14 @@ export const findAncestor = (el, cls) => {
 };
 
 export const sortArr = (arr, sortType) => {
-	return arr.sort(function (a, b) {
+
+	let assignedArr = completeAssign({}, arr);
+
+	if (typeof assignedArr.map !== "function") {
+		assignedArr = Object.keys(assignedArr).map(key => assignedArr[key]);
+	}
+
+	return assignedArr.sort(function (a, b) {
 
 		let nameA = a.listItem.name.toLowerCase();
 		let nameB = b.listItem.name.toLowerCase();

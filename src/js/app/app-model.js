@@ -102,9 +102,7 @@ export default class Model {
 
 	sortAlphabetically(filterType) {
 
-		this._state.filteredBaseCities = this._baseCities;
-
-		sortArr(this._state.filteredBaseCities, filterType);
+		this._state.filteredBaseCities = sortArr(this._baseCities, filterType);
 
 	}
 
@@ -132,7 +130,7 @@ export default class Model {
 
 		this._state.filteredSelectedCities = [];
 
-		this.selectedCities.map(function (city) {
+		this._state.selectedCities.map(function (city) {
 			features.every(function (feature) {
 
 				if (city.listItem.featuresArr.indexOf(feature) !== -1) {
@@ -147,7 +145,34 @@ export default class Model {
 
 	setCitySelected () {
 
+		let that = this;
+		let counter = 0;
 
+		let isCityAlreadySelected = this._state.selectedCities.some(function (city, index) {
+			counter = index;
+			return city.name === that._state.selectedCity.name;
+		});
+
+		if (isCityAlreadySelected) {
+			this._state.selectedCities.splice(counter, 1);
+			this._baseCities.push(this._state.selectedCity);
+
+			this._state.selectedCity.isSelected = false;
+		} else {
+			this._state.selectedCities.push(this._state.selectedCity);
+
+			this._baseCities.some(function (city, index) {
+				counter = index;
+				return city.name === that._baseCities.name;
+			});
+
+			this._baseCities.splice(counter, 1);
+
+			this._state.selectedCity.isSelected = true;
+		}
+
+		console.log('this._baseCities: ', this._baseCities);
+		console.log('this._state.selectedCities: ', this._state.selectedCities);
 
 		this._state.isTransferToAnotherList = true;
 	}
@@ -157,15 +182,6 @@ export default class Model {
 	}
 
 	updateSelectedCityDOMelem(newItem) {
-
-		let that = this;
-
-		this.filteredCities.map(function (city) {
-			if (city.listItem.elem === newItem) {
-
-				city.listItem.elem = that._state.selectedCity.listItem.elem
-			}
-		});
 
 		this._state.selectedCity.listItem.elem = newItem;
 

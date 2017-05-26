@@ -89,103 +89,54 @@ class Presenter {
 	}
 
 	initFilters() {
-
-		let that = this;
-
 		let filter = new Filter();
-		let filterType = null;
-		let textToFilterBy = null;
-		let cities = null;
-		let container = containerForCities;
 
-		let selectedFlag;
-
-		let listType = ListType.BASE;
-
-		filter.setFilterEnabled = function (evt) {
-			evt.preventDefault();
-			selectedFlag = false;
-
-			filterType = this.value;
-
-			switch (filterType) {
-				case FilterType.ASCENDING:
-
-					break;
-
-				case FilterType.DESCENDING:
-
-					break;
-
-				case FilterType.FEATURE.indexOf(filterType) !== -1:
-					selectedFlag = true;
-
-					container = containerForSelectedCities;
-					listType = ListType.SELECTED;
-
-					break;
-
-				default:
-
-					textToFilterBy = filterType;
-					filterType = FilterType.SEARCH;
-
-			}
-
-			AppModel.filterList(filterType, textToFilterBy);
-
-			cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
-
-			that.renderList(cities, container, listType);
-		};
+		filter.setFilterEnabled = this.setFilterEnabled;
 
 		filter.bindEvents();
+	}
 
-		//let that = this;
-		// let ascFilterBtn = document.getElementById('cities-sort-asc');
-		// let descFilterBtn = document.getElementById('cities-sort-desc');
-		//
-		// let searchInput = document.querySelector('.cities-filters-name');
-		//
-		// let featureFilters = document.querySelectorAll('[name="cities-features"]');
-		//
-		// console.log(featureFilters);
-		//
-		// ascFilterBtn.addEventListener('click', function (evt) {
-		// 	evt.preventDefault();
-		//
-		// 	AppModel.filterList(this.value);
-		//
-		// 	that.renderList();
-		// });
-		//
-		// descFilterBtn.addEventListener('click', function (evt) {
-		// 	evt.preventDefault();
-		//
-		//
-		// 	AppModel.filterList(this.value);
-		//
-		// 	that.renderList();
-		// });
-		//
-		// searchInput.addEventListener('input', function (evt) {
-		// 	evt.preventDefault();
-		//
-		// 	AppModel.filterList('search', this.value);
-		//
-		// 	that.renderList();
-		//
-		// });
-		//
-		// for (let i = 0; i < featureFilters.length; i++) {
-		//
-		// 	featureFilters[i].addEventListener('change', function (evt) {
-		//
-		// 		AppModel.filterByFeatures(this.value);
-		//
-		// 	});
-		// }
+	setFilterEnabled(evt) {
+		evt.preventDefault();
 
+		let that = this;
+		let textToFilterBy = null;
+		let container = containerForCities;
+
+		let listType = ListType.BASE;
+		let filterType = this.value;
+
+		let selectedFlag = false;
+
+		switch (filterType) {
+			case FilterType.ASCENDING:
+
+				break;
+
+			case FilterType.DESCENDING:
+
+				break;
+
+			case FilterType.FEATURE.indexOf(filterType) !== -1:
+				selectedFlag = true;
+
+				container = containerForSelectedCities;
+				listType = ListType.SELECTED;
+
+				break;
+
+			default:
+
+				textToFilterBy = filterType;
+				filterType = FilterType.SEARCH;
+
+		}
+
+		AppModel.filterList(filterType, textToFilterBy);
+
+		let cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
+
+		that.renderList(cities, container, listType);
 	}
 
 	getMarkerPosition(item) {
@@ -224,7 +175,57 @@ class Presenter {
 
 	}
 
-	transferToAnotherList(avatar) {
+	// transferToAnotherList(avatar) {
+	//
+	// 	let city = AppModel.state.selectedCity;
+	//
+	// 	let destination = avatar._currentTargetElem;
+	//
+	// 	if (!destination.classList.contains('cities')) {
+	//
+	// 		let newDestination = findAncestor(destination, 'cities');
+	//
+	// 		if (newDestination) {
+	// 			destination = newDestination;
+	// 		} else {
+	// 			throw new Error('invalid destination');
+	// 		}
+	//
+	// 	}
+	//
+	// 	let item = new ListItemView(city);
+	//
+	// 	item.marker = city.listItem.marker;
+	// 	destination.appendChild(item.elem);
+	//
+	// 	item.bindEvents();
+	//
+	// 	city.listItem.removeItem();
+	// 	avatar.onDragEnd();
+	//
+	// 	AppModel.updateSelectedCityDOMelem(item.elem);
+	// }
+
+	// transferThroughList(avatar, event) {
+	//
+	// 	let target = this.findDropTarget(event);
+	//
+	// 	var avatarInfo = avatar.getDragInfo(event);
+	//
+	// 	avatar.onDragEnd(); // аватар больше не нужен, перенос успешен
+	//
+	// 	let contentToReplace = target._targetElem.innerHTML;
+	// 	let contentToMove = avatarInfo.elem.innerHTML;
+	//
+	// 	target._targetElem.innerHTML = contentToMove;
+	// 	avatarInfo.dragZoneElem.innerHTML = contentToReplace;
+	//
+	// 	AppModel.updateSelectedCityDOMelem(target._targetElem);
+	//
+	// 	target._targetElem = null;
+	// }
+
+	transferItem(avatar, event) {
 
 		let city = AppModel.state.selectedCity;
 
@@ -253,34 +254,12 @@ class Presenter {
 		avatar.onDragEnd();
 
 		AppModel.updateSelectedCityDOMelem(item.elem);
-	}
 
-	transferThroughList(avatar, event) {
-
-		let target = this.findDropTarget(event);
-
-		var avatarInfo = avatar.getDragInfo(event);
-
-		avatar.onDragEnd(); // аватар больше не нужен, перенос успешен
-
-		let contentToReplace = target._targetElem.innerHTML;
-		let contentToMove = avatarInfo.elem.innerHTML;
-
-		target._targetElem.innerHTML = contentToMove;
-		avatarInfo.dragZoneElem.innerHTML = contentToReplace;
-
-		AppModel.updateSelectedCityDOMelem(target._targetElem);
-
-		target._targetElem = null;
-	}
-
-	transferItem(avatar, event) {
-
-		if (AppModel.state.isTransferToAnotherList) {
-			this.transferToAnotherList(avatar);
-		} else {
-			this.transferThroughList(avatar, event);
-		}
+		// if (AppModel.state.isTransferToAnotherList) {
+		// 	this.transferToAnotherList(avatar);
+		// } else {
+		// 	this.transferThroughList(avatar, event);
+		// }
 
 	}
 
