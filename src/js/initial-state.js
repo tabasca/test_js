@@ -1,7 +1,9 @@
 export const initialState = {
-	selectedCity: {
-		elem: '',
-		listItem: '',
-		isSelected: false
-	}
+	baseCities: [],
+	filteredBaseCities: [],
+	selectedCities: [],
+	filteredSelectedCities: [],
+	selectedCity: [],
+	activeBaseFilter: null,
+	activeSelectedFilter: null,
 };

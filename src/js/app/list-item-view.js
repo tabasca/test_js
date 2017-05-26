@@ -35,6 +35,18 @@ export default class ListItemView {
 		return this._showPopup = handler;
 	}
 
+	getFeaturesNames(list) {
+		let featureName = '';
+		let counter = 0;
+
+		for (let it of list) {
+			counter++;
+
+			feature += `<span class="list-item-feature">${it}️</span>`;
+		}
+
+	}
+
 	getFeatures(list) {
 
 		let feature = '';

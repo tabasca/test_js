@@ -1,6 +1,8 @@
 import Model from './app-model';
 import ListItemView from './list-item-view';
 import Map from './map';
+import Filter from './filter';
+import { ListType, FilterType } from '../meta';
 import { getCoords, getElementFromTemplate, findAncestor } from '../utils';
 
 //draganddrop in OOP from learnjavascript.ru
@@ -11,8 +13,8 @@ let AppModel;
 let AppMap;
 let App;
 
-let containerForCities;
-let containerForSelectedCities;
+let containerForCities = document.getElementById('cities');
+let containerForSelectedCities = document.querySelector('.cities-selected');
 
 let dragZone, avatar, dropTarget;
 let downX, downY;
@@ -24,87 +26,53 @@ class Presenter {
 		AppModel = new Model(App.data);
 		AppMap = new Map();
 
-		containerForCities = document.getElementById('cities');
-		containerForSelectedCities = document.querySelector('.cities-selected');
+		if (AppModel.state.selectedCities.length) {
+			this.renderList(AppModel.state.selectedCities, containerForSelectedCities);
+		}
 
-		this.renderList();
+		this.renderList(AppModel.cities, containerForCities);
+
+		this.initFilters();
 
 		this.bindHandlers = this.bindHandlers.bind(this);
-
 		this.bindHandlers();
 		this.addDragAndDrop();
 
-		this.initFilters();
 	}
 
-	clearList() {
-		AppModel.renderedCities.map(function (city) {
+	clearList(listType = null) {
+
+		let citiesArr = null;
+
+		switch (listType) {
+			case ListType.BASE:
+				citiesArr = AppModel.cities;
+				break;
+			case ListType.SELECTED:
+				citiesArr = AppModel.state.selectedCities;
+				break;
+
+			default:
+				citiesArr = [];
+				return false;
+
+		}
+
+		citiesArr.map(function (city) {
 			city.listItem.removeItem();
 			city.listItem.marker.remove();
 		});
-	}
-
-	renderList() {
-
-		this.clearList();
-
-		let cities = AppModel.cities;
-
-		if (AppModel.state.isFilterEnabled) {
-
-			cities = AppModel.filteredCities;
-
-		}
-
-		this.appendCities(containerForCities, cities);
-
-		if (AppModel.citiesInSelectedList.length > 0) {
-			this.appendCities(containerForSelectedCities);
-		}
 
 	}
 
-	initFilters() {
+	renderList(cities, container, listType) {
+
+		this.clearList(listType);
+
 		let that = this;
-		let ascFilterBtn = document.getElementById('cities-sort-asc');
-		let descFilterBtn = document.getElementById('cities-sort-desc');
 
-		let searchInput = document.querySelector('.cities-filters-name');
+		cities.map(function (city) {
 
-		ascFilterBtn.addEventListener('click', function (evt) {
-			evt.preventDefault();
-
-			//AppModel.state.isFilterEnabled = !AppModel.state.isFilterEnabled;
-
-			AppModel.filterList('asc');
-
-			that.renderList();
-		});
-
-		descFilterBtn.addEventListener('click', function (evt) {
-			evt.preventDefault();
-
-
-			AppModel.filterList('desc');
-
-			that.renderList();
-		});
-
-		searchInput.addEventListener('input', function (evt) {
-			evt.preventDefault();
-
-			AppModel.filterList('search', this.value);
-
-			that.renderList();
-
-		});
-	}
-
-	appendCities(container, data) {
-		let that = this;
-		AppModel.renderedCities = [];
-
-		data.map(function (city) {
 			let item = new ListItemView(city);
 
 			container.appendChild(item.elem);
@@ -116,9 +84,108 @@ class Presenter {
 
 			item.bindEvents(item);
 			city.listItem = item;
-
-			AppModel.renderedCities.push(city);
 		});
+
+	}
+
+	initFilters() {
+
+		let that = this;
+
+		let filter = new Filter();
+		let filterType = null;
+		let textToFilterBy = null;
+		let cities = null;
+		let container = containerForCities;
+
+		let selectedFlag;
+
+		let listType = ListType.BASE;
+
+		filter.setFilterEnabled = function (evt) {
+			evt.preventDefault();
+			selectedFlag = false;
+
+			filterType = this.value;
+
+			switch (filterType) {
+				case FilterType.ASCENDING:
+
+					break;
+
+				case FilterType.DESCENDING:
+
+					break;
+
+				case FilterType.FEATURE.indexOf(filterType) !== -1:
+					selectedFlag = true;
+
+					container = containerForSelectedCities;
+					listType = ListType.SELECTED;
+
+					break;
+
+				default:
+
+					textToFilterBy = filterType;
+					filterType = FilterType.SEARCH;
+
+			}
+
+			AppModel.filterList(filterType, textToFilterBy);
+
+			cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
+
+			that.renderList(cities, container, listType);
+		};
+
+		filter.bindEvents();
+
+		//let that = this;
+		// let ascFilterBtn = document.getElementById('cities-sort-asc');
+		// let descFilterBtn = document.getElementById('cities-sort-desc');
+		//
+		// let searchInput = document.querySelector('.cities-filters-name');
+		//
+		// let featureFilters = document.querySelectorAll('[name="cities-features"]');
+		//
+		// console.log(featureFilters);
+		//
+		// ascFilterBtn.addEventListener('click', function (evt) {
+		// 	evt.preventDefault();
+		//
+		// 	AppModel.filterList(this.value);
+		//
+		// 	that.renderList();
+		// });
+		//
+		// descFilterBtn.addEventListener('click', function (evt) {
+		// 	evt.preventDefault();
+		//
+		//
+		// 	AppModel.filterList(this.value);
+		//
+		// 	that.renderList();
+		// });
+		//
+		// searchInput.addEventListener('input', function (evt) {
+		// 	evt.preventDefault();
+		//
+		// 	AppModel.filterList('search', this.value);
+		//
+		// 	that.renderList();
+		//
+		// });
+		//
+		// for (let i = 0; i < featureFilters.length; i++) {
+		//
+		// 	featureFilters[i].addEventListener('change', function (evt) {
+		//
+		// 		AppModel.filterByFeatures(this.value);
+		//
+		// 	});
+		// }
+
 	}
 
 	getMarkerPosition(item) {

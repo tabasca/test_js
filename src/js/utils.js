@@ -1,3 +1,5 @@
+import { FilterType } from './meta';
+
 // This is an assign function that copies full descriptors
 export const completeAssign = (target, ...sources) => {
 	sources.forEach((source) => {
@@ -76,4 +78,37 @@ export const isDescendant = (parent, child) => {
 export const findAncestor = (el, cls) => {
 	while ((el = el.parentElement) && !el.classList.contains(cls));
 	return el;
+};
+
+export const sortArr = (arr, sortType) => {
+	return arr.sort(function (a, b) {
+
+		let nameA = a.listItem.name.toLowerCase();
+		let nameB = b.listItem.name.toLowerCase();
+
+		switch (sortType) {
+			case FilterType.ASCENDING:
+				if (nameA < nameB) {
+					return -1;
+				}
+
+				if (nameA > nameB) {
+					return 1;
+				}
+				break;
+			case FilterType.DESCENDING:
+				if (nameA < nameB) {
+					return 1;
+				}
+
+				if (nameA > nameB) {
+					return -1;
+				}
+				break;
+			default:
+				return 0;
+
+		}
+
+	});
 };

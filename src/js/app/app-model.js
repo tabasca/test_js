@@ -1,23 +1,18 @@
-import { completeAssign } from '../utils';
+import { sortArr, completeAssign } from '../utils';
 import { initialState } from '../initial-state';
+import { FilterType } from '../meta';
 
 export default class Model {
-	constructor(data, state = initialState) {
+	constructor(data = [], state = initialState) {
 
 		this._state = completeAssign({}, state);
-		this._cities = completeAssign({}, data);
+		this._baseCities = completeAssign({}, data);
 
-		if (typeof this._cities.map !== "function") {
-			this._cities = Object.keys(this._cities).map(key => this._cities[key]);
+		if (typeof this._baseCities.map !== "function") {
+			this._baseCities = Object.keys(this._baseCities).map(key => this._baseCities[key]);
 		}
 
-		this.selectedCities = [];
-
-		this.renderedCities = [];
-
 		this.selectCity = this.selectCity.bind(this);
-
-		this.resetFilteredCities();
 
 	}
 
@@ -26,41 +21,39 @@ export default class Model {
 	}
 
 	get cities() {
-		return this._cities;
+		return this._baseCities;
 	}
 
-	get citiesInSelectedList() {
-		let that = this;
+	// get citiesInSelectedList() {
+	// 	let that = this;
+	//
+	// 	this._citiesInSelectedList = [];
+	//
+	// 	this._cities.map(function (city) {
+	// 		if (city.isSelected) {
+	// 			that._citiesInSelectedList.push(city);
+	// 		}
+	// 	});
+	//
+	// 	return this._citiesInSelectedList;
+	// }
 
-		this._citiesInSelectedList = [];
-
-		this._cities.map(function (city) {
-			if (city.isSelected) {
-				that._citiesInSelectedList.push(city);
-			}
-		});
-
-		return this._citiesInSelectedList;
-	}
-
-	resetFilteredCities() {
-		this.filteredCities = Object.assign({}, this.cities);
-
-		if (typeof this.filteredCities.map !== "function") {
-			this.filteredCities = Object.keys(this.filteredCities).map(key => this.filteredCities[key]);
-		}
-	}
+	// resetFilteredSelectedCities() {
+	// 	this.filteredSelectedCities = Object.assign({}, this.selectedCities);
+	//
+	// 	if (typeof this.filteredSelectedCities.map !== "function") {
+	// 		this.filteredSelectedCities = Object.keys(this.filteredSelectedCities).map(key => this.filteredSelectedCities[key]);
+	// 	}
+	// }
 
 	selectCity(avatar) {
 		let that = this;
 
-		this._cities.map(function (city) {
+		this._baseCities.map(function (city) {
 
 			if(city.listItem.elem.innerHTML === avatar._dragZoneElem.innerHTML) {
 
 				that._state.selectedCity = completeAssign({}, city);
-
-				that.selectedCities.push(that._state.selectedCity);
 
 			}
 		});
@@ -68,51 +61,50 @@ export default class Model {
 
 	filterList(filterType, filterSymbols) {
 
-		this._state.isFilterEnabled = true;
-
 		switch (filterType) {
-			case 'asc':
-				this.sortAlphabetically('asc');
+			case FilterType.ASCENDING:
+
+				this._state.activeBaseFilter = FilterType.ASCENDING;
+				this.sortAlphabetically(filterType);
 				break;
-			case 'desc':
-				this.sortAlphabetically('desc');
+
+			case FilterType.DESCENDING:
+
+				this._state.activeBaseFilter = FilterType.DESCENDING;
+				this.sortAlphabetically(filterType);
 				break;
-			case 'search':
+
+			case FilterType.SEARCH:
+
+				this._state.activeBaseFilter = FilterType.SEARCH;
 				this.filterByText(filterSymbols);
 				break;
+
+			case FilterType.FEATURE.indexOf(filterType) !== -1:
+
+				if (this._state.activeSelectedFilter.indexOf(filterType) === -1) {
+					this._state.activeSelectedFilter.push(filterType);
+				} else {
+					this._state.activeSelectedFilter.splice(this._state.activeSelectedFilter.indexOf(filterType), 1);
+				}
+
+				this.filterByFeature(this._state.activeSelectedFilter);
+				break;
+
 			default:
-				this.resetFilteredCities();
+
+				this._state.activeBaseFilter = '';
+				this._state.activeSelectedFilter = '';
+
 		}
 
 	}
 
 	sortAlphabetically(filterType) {
 
-		this.filteredCities.sort(function (a, b) {
+		this._state.filteredBaseCities = this._baseCities;
 
-			let nameA = a.listItem.name.toLowerCase();
-			let nameB = b.listItem.name.toLowerCase();
-
-			if (filterType === 'asc') {
-				if (nameA < nameB) {
-					return -1;
-				}
-
-				if (nameA > nameB) {
-					return 1;
-				}
-			} else {
-				if (nameA < nameB) {
-					return 1;
-				}
-
-				if (nameA > nameB) {
-					return -1;
-				}
-			}
-
-			return 0;
-		});
+		sortArr(this._state.filteredBaseCities, filterType);
 
 	}
 
@@ -120,23 +112,42 @@ export default class Model {
 
 		let that = this;
 
-		if (!text.length) {
-			this.resetFilteredCities();
+		this._state.filteredBaseCities = [];
 
+		if (!text.length) {
+
+			this._state.filteredBaseCities = this._baseCities;
 			return;
 		}
 
-		this.filteredCities = [];
-
-		this._cities.map(function (city) {
+		this._baseCities.map(function (city) {
 			if (city.listItem.name.toLowerCase().indexOf(text.toLowerCase()) > -1) {
-				that.filteredCities.push(city);
+				that._state.filteredBaseCities.push(city);
 			}
 		});
 	}
 
-	setCitySelected() {
-		this._state.selectedCity.isSelected = !this._state.selectedCity.isSelected;
+	filterByFeature (features) {
+		let that = this;
+
+		this._state.filteredSelectedCities = [];
+
+		this.selectedCities.map(function (city) {
+			features.every(function (feature) {
+
+				if (city.listItem.featuresArr.indexOf(feature) !== -1) {
+					that._state.filteredSelectedCities.push(city);
+				}
+
+			});
+		});
+
+		console.log('filtered selected cities: ', this._state.filteredSelectedCities);
+	}
+
+	setCitySelected () {
+
+
 
 		this._state.isTransferToAnotherList = true;
 	}
