@@ -27,17 +27,16 @@ class Presenter {
 		AppMap = new Map();
 
 		if (AppModel.state.selectedCities.length) {
-			this.renderList(AppModel.state.selectedCities, containerForSelectedCities);
+			this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
 		}
 
-		this.renderList(AppModel.cities, containerForCities);
+		this.renderList(AppModel.cities, containerForCities, ListType.BASE);
 
 		this.initFilters();
 
 		this.bindHandlers = this.bindHandlers.bind(this);
 		this.bindHandlers();
 		this.addDragAndDrop();
-
 	}
 
 	clearList(listType = null) {
@@ -46,10 +45,10 @@ class Presenter {
 
 		switch (listType) {
 			case ListType.BASE:
-				citiesArr = AppModel.state.filteredBaseCities.length ? AppModel.state.filteredBaseCities : AppModel.cities;
+				citiesArr = AppModel.state.renderedBaseCities;
 				break;
 			case ListType.SELECTED:
-				citiesArr = AppModel.state.filteredSelectedCities.length ? AppModel.state.filteredSelectedCities : AppModel.state.selectedCities;
+				citiesArr = AppModel.state.renderedSelectedCities;
 				break;
 
 			default:
@@ -65,10 +64,11 @@ class Presenter {
 			city.listItem.marker.remove();
 		});
 
+		AppModel.clearRenderedArr(listType);
+
 	}
 
-	renderList(cities, container, listType) {
-
+	renderList (cities, container, listType) {
 		this.clearList(listType);
 
 		let that = this;
@@ -83,14 +83,14 @@ class Presenter {
 			item.marker = AppMap._marker._icon;
 
 			item.showPopup = that.showPopup.bind(that, item);
-
 			item.bindEvents(item);
-			city.listItem = item;
-		});
 
+			city.listItem = item;
+			AppModel.updateRenderedList(city, listType);
+		});
 	}
 
-	initFilters() {
+	initFilters () {
 		let filter = new Filter();
 
 		filter.setFilterEnabled = this.setFilterEnabled.bind(this);
@@ -98,8 +98,9 @@ class Presenter {
 		filter.bindEvents();
 	}
 
-	setFilterEnabled(evt) {
+	setFilterEnabled (evt) {
 		evt.preventDefault();
+
 		let textToFilterBy = null;
 		let container = containerForCities;
 
@@ -139,11 +140,11 @@ class Presenter {
 		this.renderList(cities, container, listType);
 	}
 
-	getMarkerPosition(item) {
+	getMarkerPosition (item) {
 		return getCoords(item.marker);
 	}
 
-	showPopup(item) {
+	showPopup (item) {
 
 		if (AppModel.popup) {
 			this.destroyPopup();
@@ -159,23 +160,19 @@ class Presenter {
 		AppModel.popup = popup;
 	}
 
-	destroyPopup() {
-
+	destroyPopup () {
 		AppModel.popup.remove();
-
 	}
 
-	addDragAndDrop() {
-
+	addDragAndDrop () {
 		new ListDragZone(containerForCities);
 		new ListDropTarget(containerForCities);
 
 		new ListDragZone(containerForSelectedCities);
 		new ListDropTarget(containerForSelectedCities);
-
 	}
 
-	getDestination(currentTarget, destinationSelector) {
+	getDestination (currentTarget, destinationSelector) {
 		if (!currentTarget.classList.contains(destinationSelector)) {
 
 			let newDestination = findAncestor(currentTarget, destinationSelector);
@@ -183,15 +180,14 @@ class Presenter {
 			if (newDestination) {
 				return newDestination;
 			} else {
-				throw new Error('invalid destination');
+				return false;
 			}
 		}
 
 		return currentTarget;
 	}
 
-	transferItem(avatar) {
-
+	transferItem (avatar) {
 		let city = AppModel.state.selectedCity;
 
 		let destination = avatar._currentTargetElem;
@@ -216,9 +212,13 @@ class Presenter {
 
 			destination = this.getDestination(destination, 'list-item');
 
-			let replacedItem = AppModel.getReplacedElem(destination);
-
 			let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+
+			let replacedItem = AppModel.getCityObject(destination, currentList);
+
+			if (replacedItem === city || !replacedItem) {
+				return false;
+			}
 
 			AppModel.swapItems(currentList, city, replacedItem);
 
@@ -231,11 +231,9 @@ class Presenter {
 		}
 
 		avatar.onDragEnd();
-
 	}
 
-	onMouseDown(e) {
-
+	onMouseDown (e) {
 		if (e.which != 1) { // не левой кнопкой
 			return false;
 		}
@@ -253,7 +251,7 @@ class Presenter {
 		return false;
 	}
 
-	onMouseMove(e) {
+	onMouseMove (e) {
 		if (!dragZone) return; // элемент не зажат
 
 		if (!avatar) { // элемент нажат, но пока не начали его двигать
@@ -268,20 +266,18 @@ class Presenter {
 				return;
 			}
 
-			AppModel.selectCity(avatar);
+			let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+
+			let cityObj = AppModel.getCityObject(avatar._dragZoneElem, currentList);
+			AppModel.passCityToTheModel(cityObj);
 		}
 
-		// отобразить перенос объекта, перевычислить текущий элемент под курсором
 		avatar.onDragMove(e);
 
-		// найти новый dropTarget под курсором: newDropTarget
-		// текущий dropTarget остался от прошлого mousemove
-		// *оба значения: и newDropTarget и dropTarget могут быть null
 		var newDropTarget = this.findDropTarget(e);
 
 		if (newDropTarget != dropTarget) {
 
-			// уведомить старую и новую зоны-цели о том, что с них ушли/на них зашли
 			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, e);
 			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e);
 
@@ -301,8 +297,7 @@ class Presenter {
 		return false;
 	}
 
-	onMouseUp(e) {
-
+	onMouseUp (e) {
 		if (e.which != 1) { // не левой кнопкой
 			return false;
 		}
@@ -329,12 +324,12 @@ class Presenter {
 		this.cleanUp();
 	}
 
-	cleanUp() {
+	cleanUp () {
 		// очистить все промежуточные объекты
 		dragZone = avatar = dropTarget = null;
 	}
 
-	findDragZone(event) {
+	findDragZone (event) {
 		var elem = event.target;
 		while (elem != document && !elem.dragZone) {
 			elem = elem.parentNode;
@@ -342,7 +337,7 @@ class Presenter {
 		return elem.dragZone;
 	}
 
-	findDropTarget(event) {
+	findDropTarget (event) {
 		// получить элемент под аватаром
 		var elem = avatar.getTargetElem();
 
@@ -357,16 +352,13 @@ class Presenter {
 		return elem.dropTarget;
 	}
 
-	bindHandlers() {
-
+	bindHandlers () {
 		App.onMouseMove = this.onMouseMove.bind(this);
 		App.onMouseDown = this.onMouseDown.bind(this);
 		App.onMouseUp = this.onMouseUp.bind(this);
 
 		App.bindEvents();
-
 	}
-
 }
 
 export default new Presenter();

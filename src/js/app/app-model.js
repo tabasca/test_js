@@ -1,62 +1,75 @@
 import { transformToArr, swapItemsInArr, sortArr, completeAssign } from '../utils';
 import { initialState } from '../initial-state';
-import { FilterType } from '../meta';
+import { ListType, FilterType } from '../meta';
 
 export default class Model {
-	constructor(data = [], state = initialState) {
+	constructor (data = [], state = initialState) {
 
 		this._state = completeAssign({}, state);
-		this._initialData = completeAssign({}, data);
 		this._baseCities = completeAssign({}, data);
 
 		this._baseCities = transformToArr(this._baseCities);
-		this._initialData = transformToArr(this._initialData);
-
-		this.selectCity = this.selectCity.bind(this);
 
 	}
 
-	get state() {
+	get state () {
 		return this._state;
 	}
 
-	get cities() {
+	get cities () {
 		return this._baseCities;
 	}
 
-	// get citiesInSelectedList() {
-	// 	let that = this;
-	//
-	// 	this._citiesInSelectedList = [];
-	//
-	// 	this._cities.map(function (city) {
-	// 		if (city.isSelected) {
-	// 			that._citiesInSelectedList.push(city);
-	// 		}
-	// 	});
-	//
-	// 	return this._citiesInSelectedList;
-	// }
+	updateRenderedList(city, listType) {
+		switch (listType) {
+			case ListType.BASE:
+				this._state.renderedBaseCities.push(city);
+				break;
+			case ListType.SELECTED:
+				this._state.renderedSelectedCities.push(city);
+				break;
+		}
+	}
 
-	// resetFilteredSelectedCities() {
-	// 	this.filteredSelectedCities = Object.assign({}, this.selectedCities);
-	//
-	// 	if (typeof this.filteredSelectedCities.map !== "function") {
-	// 		this.filteredSelectedCities = Object.keys(this.filteredSelectedCities).map(key => this.filteredSelectedCities[key]);
-	// 	}
-	// }
+	clearRenderedArr(listType) {
+		switch (listType) {
+			case ListType.BASE:
+				this._state.renderedBaseCities = [];
+				break;
+			case ListType.SELECTED:
+				this._state.renderedSelectedCities = [];
+				break;
+		}
+	}
 
-	selectCity(avatar) {
-		let that = this;
+	getCityObject (elem, list) {
+		let cityObj;
 
-		this._baseCities.map(function (city) {
+		switch (list) {
+			case 'cities':
+				list = this._state.filteredBaseCities.length ? this._state.filteredBaseCities : this._state.filteredBaseCities = completeAssign({}, this._baseCities);
+				break;
+			case 'cities-selected':
+				list = this._state.filteredSelectedCities.length ? this._state.filteredSelectedCities : this._state.filteredSelectedCities = completeAssign({}, this._state.selectedCities);
+				break;
+		}
 
-			if(city.listItem.elem.innerHTML === avatar._dragZoneElem.innerHTML) {
+		list = transformToArr(list);
 
-				that._state.selectedCity = completeAssign({}, city);
+		list.map(function (city) {
+
+			if(city.listItem.elem.innerHTML === elem.innerHTML) {
+
+				cityObj = completeAssign({}, city);
 
 			}
 		});
+
+		return cityObj;
+	}
+
+	passCityToTheModel(city) {
+		this._state.selectedCity = completeAssign({}, city);
 	}
 
 	filterList(filterType, filterSymbols) {
@@ -143,22 +156,6 @@ export default class Model {
 		console.log('filtered selected cities: ', this._state.filteredSelectedCities);
 	}
 
-	getReplacedElem(item) {
-
-		let replacedElem;
-
-		this._initialData.map(function (city) {
-
-			if(city.listItem.elem.innerHTML === item.innerHTML) {
-
-				replacedElem = completeAssign({}, city);
-
-			}
-		});
-
-		return replacedElem;
-	}
-
 	swapItems(list, a, b) {
 
 		switch (list) {
@@ -186,8 +183,17 @@ export default class Model {
 		});
 
 		if (isCityAlreadySelected) {
+
 			this._state.selectedCities.splice(counter, 1);
 			this._baseCities.push(this._state.selectedCity);
+
+			if (this._state.filteredBaseCities.length) {
+				this._state.filteredBaseCities.push(this._state.selectedCity);
+			}
+
+			if (this._state.renderedBaseCities.length) {
+				this._state.renderedBaseCities.push(this._state.selectedCity);
+			}
 
 			this._state.selectedCity.isSelected = false;
 		} else {
@@ -200,11 +206,24 @@ export default class Model {
 
 			this._baseCities.splice(counter, 1);
 
+			if (this._state.filteredBaseCities.length) {
+				this._state.filteredBaseCities.some(function (city, index) {
+					counter = index;
+					return city.name === that._state.selectedCity.name;
+				});
+				this._state.filteredBaseCities.splice(counter, 1);
+			}
+
+			if (this._state.renderedBaseCities.length) {
+				this._state.renderedBaseCities.some(function (city, index) {
+					counter = index;
+					return city.name === that._state.selectedCity.name;
+				});
+				this._state.renderedBaseCities.splice(counter, 1);
+			}
+
 			this._state.selectedCity.isSelected = true;
 		}
-
-		console.log('this._baseCities: ', this._baseCities);
-		console.log('this._state.selectedCities: ', this._state.selectedCities);
 
 		this.isTransferToAnotherList = true;
 	}
