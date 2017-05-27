@@ -7,5 +7,5 @@ export const initialState = {
 	renderedSelectedCities: [],
 	selectedCity: [],
 	activeBaseFilter: null,
-	activeSelectedFilter: null,
+	activeSelectedFilter: [],
 };

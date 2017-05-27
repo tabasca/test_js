@@ -2,7 +2,14 @@ export const FilterType = {
 	ASCENDING: 'asc',
 	DESCENDING: 'desc',
 	SEARCH: 'search',
-	FEATURE: ['sun', 'snow', 'rain', 'wind', 'meteor', 'cloud']
+	FEATURE: {
+		sun: 'sun',
+		snow: 'snow',
+		rain: 'rain',
+		wind: 'wind',
+		meteor: 'meteor',
+		cloud: 'cloud'
+	}
 };
 
 export const ListType = {

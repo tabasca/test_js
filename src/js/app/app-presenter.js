@@ -118,7 +118,7 @@ class Presenter {
 
 				break;
 
-			case FilterType.FEATURE.indexOf(filterType) !== -1:
+			case FilterType.FEATURE.sun: case FilterType.FEATURE.cloud: case FilterType.FEATURE.meteor: case FilterType.FEATURE.rain: case FilterType.FEATURE.wind: case FilterType.FEATURE.snow:
 				selectedFlag = true;
 
 				container = containerForSelectedCities;

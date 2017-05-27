@@ -20,7 +20,7 @@ export default class Model {
 		return this._baseCities;
 	}
 
-	updateRenderedList(city, listType) {
+	updateRenderedList (city, listType) {
 		switch (listType) {
 			case ListType.BASE:
 				this._state.renderedBaseCities.push(city);
@@ -31,7 +31,7 @@ export default class Model {
 		}
 	}
 
-	clearRenderedArr(listType) {
+	clearRenderedArr (listType) {
 		switch (listType) {
 			case ListType.BASE:
 				this._state.renderedBaseCities = [];
@@ -68,11 +68,11 @@ export default class Model {
 		return cityObj;
 	}
 
-	passCityToTheModel(city) {
+	passCityToTheModel (city) {
 		this._state.selectedCity = completeAssign({}, city);
 	}
 
-	filterList(filterType, filterSymbols) {
+	filterList (filterType, filterSymbols) {
 
 		switch (filterType) {
 			case FilterType.ASCENDING:
@@ -93,7 +93,7 @@ export default class Model {
 				this.filterByText(filterSymbols);
 				break;
 
-			case FilterType.FEATURE.indexOf(filterType) !== -1:
+			case FilterType.FEATURE.sun: case FilterType.FEATURE.cloud: case FilterType.FEATURE.meteor: case FilterType.FEATURE.rain: case FilterType.FEATURE.wind: case FilterType.FEATURE.snow:
 
 				if (this._state.activeSelectedFilter.indexOf(filterType) === -1) {
 					this._state.activeSelectedFilter.push(filterType);
@@ -113,13 +113,13 @@ export default class Model {
 
 	}
 
-	sortAlphabetically(filterType) {
+	sortAlphabetically (filterType) {
 
 		this._state.filteredBaseCities = sortArr(this._baseCities, filterType);
 
 	}
 
-	filterByText(text) {
+	filterByText (text) {
 
 		let that = this;
 
@@ -139,24 +139,27 @@ export default class Model {
 	}
 
 	filterByFeature (features) {
+
+		if (!features.length) {
+			this._state.filteredSelectedCities = this._state.selectedCities;
+			return false;
+		}
+
 		let that = this;
 
 		this._state.filteredSelectedCities = [];
+		let appropriateItems = this._state.selectedCities;
 
-		this._state.selectedCities.map(function (city) {
-			features.every(function (feature) {
-
-				if (city.listItem.featuresArr.indexOf(feature) !== -1) {
-					that._state.filteredSelectedCities.push(city);
-				}
-
+		features.forEach(function (feature) {
+			that._state.filteredSelectedCities = appropriateItems.filter(function (city) {
+				return city.listItem.featuresForFilter.indexOf(feature) !== -1;
 			});
-		});
 
-		console.log('filtered selected cities: ', this._state.filteredSelectedCities);
+			appropriateItems = that._state.filteredSelectedCities;
+		});
 	}
 
-	swapItems(list, a, b) {
+	swapItems (list, a, b) {
 
 		switch (list) {
 			case 'cities':
@@ -195,9 +198,16 @@ export default class Model {
 				this._state.renderedBaseCities.push(this._state.selectedCity);
 			}
 
+			this._state.renderedSelectedCities.some(function (city, index) {
+				counter = index;
+				return city.name === that._state.selectedCity.name;
+			});
+			this._state.renderedSelectedCities.splice(counter, 1);
+
 			this._state.selectedCity.isSelected = false;
 		} else {
 			this._state.selectedCities.push(this._state.selectedCity);
+			this._state.renderedSelectedCities.push(this._state.selectedCity);
 
 			this._baseCities.some(function (city, index) {
 				counter = index;

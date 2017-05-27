@@ -35,15 +35,35 @@ export default class ListItemView {
 		return this._showPopup = handler;
 	}
 
-	getFeaturesNames(list) {
-		let featureName = '';
-		let counter = 0;
+	get featuresForFilter() {
 
-		for (let it of list) {
-			counter++;
+		this._featuresForFilter = [];
+		let featureNames = [];
 
-			feature += `<span class="list-item-feature">${it}️</span>`;
-		}
+		this.featuresArr.map(function (feature) {
+			switch (feature) {
+				case '☄️':
+					featureNames.push('meteor');
+					break;
+				case '☀️':
+					featureNames.push('sun');
+					break;
+				case '❄️':
+					featureNames.push('snow');
+					break;
+				case '💧':
+					featureNames.push('rain');
+					break;
+				case '🌥':
+					featureNames.push('cloud');
+					break;
+				case '🌬':
+					featureNames.push('wind');
+					break;
+			}
+		});
+
+		return this._featuresForFilter = featureNames;
 
 	}
 
