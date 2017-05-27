@@ -1,4 +1,4 @@
-import { sortArr, completeAssign } from '../utils';
+import { transformToArr, swapItemsInArr, sortArr, completeAssign } from '../utils';
 import { initialState } from '../initial-state';
 import { FilterType } from '../meta';
 
@@ -6,11 +6,11 @@ export default class Model {
 	constructor(data = [], state = initialState) {
 
 		this._state = completeAssign({}, state);
+		this._initialData = completeAssign({}, data);
 		this._baseCities = completeAssign({}, data);
 
-		if (typeof this._baseCities.map !== "function") {
-			this._baseCities = Object.keys(this._baseCities).map(key => this._baseCities[key]);
-		}
+		this._baseCities = transformToArr(this._baseCities);
+		this._initialData = transformToArr(this._initialData);
 
 		this.selectCity = this.selectCity.bind(this);
 
@@ -143,6 +143,38 @@ export default class Model {
 		console.log('filtered selected cities: ', this._state.filteredSelectedCities);
 	}
 
+	getReplacedElem(item) {
+
+		let replacedElem;
+
+		this._initialData.map(function (city) {
+
+			if(city.listItem.elem.innerHTML === item.innerHTML) {
+
+				replacedElem = completeAssign({}, city);
+
+			}
+		});
+
+		return replacedElem;
+	}
+
+	swapItems(list, a, b) {
+
+		switch (list) {
+			case 'cities':
+				list = this._state.filteredBaseCities.length ? this._state.filteredBaseCities : this._state.filteredBaseCities = completeAssign({}, this._baseCities);
+				break;
+			case 'cities-selected':
+				list = this._state.filteredSelectedCities.length ? this._state.filteredSelectedCities : this._state.filteredSelectedCities = completeAssign({}, this._state.selectedCities);
+				break;
+		}
+
+		list = transformToArr(list);
+
+		swapItemsInArr(list, a, b);
+	}
+
 	setCitySelected () {
 
 		let that = this;
@@ -163,7 +195,7 @@ export default class Model {
 
 			this._baseCities.some(function (city, index) {
 				counter = index;
-				return city.name === that._baseCities.name;
+				return city.name === that._state.selectedCity.name;
 			});
 
 			this._baseCities.splice(counter, 1);
@@ -174,11 +206,11 @@ export default class Model {
 		console.log('this._baseCities: ', this._baseCities);
 		console.log('this._state.selectedCities: ', this._state.selectedCities);
 
-		this._state.isTransferToAnotherList = true;
+		this.isTransferToAnotherList = true;
 	}
 
 	endTransfer() {
-		this._state.isTransferToAnotherList = false;
+		this.isTransferToAnotherList = false;
 	}
 
 	updateSelectedCityDOMelem(newItem) {

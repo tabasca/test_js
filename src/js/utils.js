@@ -119,3 +119,22 @@ export const sortArr = (arr, sortType) => {
 
 	});
 };
+
+export const swapItemsInArr = (arr, a, b) => {
+
+	let aIndex = arr.findIndex(x => x.name == a.name);
+	let bIndex = arr.findIndex(x => x.name == b.name);
+
+	let temp = arr[aIndex];
+
+	arr[aIndex] = arr[bIndex];
+	arr[bIndex] = temp;
+};
+
+export const transformToArr = (obj) => {
+	if (typeof obj.map !== "function") {
+		return obj = Object.keys(obj).map(key => obj[key]);
+	}
+
+	return obj;
+};

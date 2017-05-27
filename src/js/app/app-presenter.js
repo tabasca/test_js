@@ -3,7 +3,7 @@ import ListItemView from './list-item-view';
 import Map from './map';
 import Filter from './filter';
 import { ListType, FilterType } from '../meta';
-import { getCoords, getElementFromTemplate, findAncestor } from '../utils';
+import { transformToArr, getCoords, getElementFromTemplate, findAncestor } from '../utils';
 
 //draganddrop in OOP from learnjavascript.ru
 import ListDragZone from '../dragndrop/ListDragZone';
@@ -46,10 +46,10 @@ class Presenter {
 
 		switch (listType) {
 			case ListType.BASE:
-				citiesArr = AppModel.cities;
+				citiesArr = AppModel.state.filteredBaseCities.length ? AppModel.state.filteredBaseCities : AppModel.cities;
 				break;
 			case ListType.SELECTED:
-				citiesArr = AppModel.state.selectedCities;
+				citiesArr = AppModel.state.filteredSelectedCities.length ? AppModel.state.filteredSelectedCities : AppModel.state.selectedCities;
 				break;
 
 			default:
@@ -57,6 +57,8 @@ class Presenter {
 				return false;
 
 		}
+
+		citiesArr = transformToArr(citiesArr);
 
 		citiesArr.map(function (city) {
 			city.listItem.removeItem();
@@ -91,20 +93,18 @@ class Presenter {
 	initFilters() {
 		let filter = new Filter();
 
-		filter.setFilterEnabled = this.setFilterEnabled;
+		filter.setFilterEnabled = this.setFilterEnabled.bind(this);
 
 		filter.bindEvents();
 	}
 
 	setFilterEnabled(evt) {
 		evt.preventDefault();
-
-		let that = this;
 		let textToFilterBy = null;
 		let container = containerForCities;
 
 		let listType = ListType.BASE;
-		let filterType = this.value;
+		let filterType = evt.target.value;
 
 		let selectedFlag = false;
 
@@ -136,7 +136,7 @@ class Presenter {
 
 		let cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
 
-		that.renderList(cities, container, listType);
+		this.renderList(cities, container, listType);
 	}
 
 	getMarkerPosition(item) {
@@ -175,91 +175,62 @@ class Presenter {
 
 	}
 
-	// transferToAnotherList(avatar) {
-	//
-	// 	let city = AppModel.state.selectedCity;
-	//
-	// 	let destination = avatar._currentTargetElem;
-	//
-	// 	if (!destination.classList.contains('cities')) {
-	//
-	// 		let newDestination = findAncestor(destination, 'cities');
-	//
-	// 		if (newDestination) {
-	// 			destination = newDestination;
-	// 		} else {
-	// 			throw new Error('invalid destination');
-	// 		}
-	//
-	// 	}
-	//
-	// 	let item = new ListItemView(city);
-	//
-	// 	item.marker = city.listItem.marker;
-	// 	destination.appendChild(item.elem);
-	//
-	// 	item.bindEvents();
-	//
-	// 	city.listItem.removeItem();
-	// 	avatar.onDragEnd();
-	//
-	// 	AppModel.updateSelectedCityDOMelem(item.elem);
-	// }
+	getDestination(currentTarget, destinationSelector) {
+		if (!currentTarget.classList.contains(destinationSelector)) {
 
-	// transferThroughList(avatar, event) {
-	//
-	// 	let target = this.findDropTarget(event);
-	//
-	// 	var avatarInfo = avatar.getDragInfo(event);
-	//
-	// 	avatar.onDragEnd(); // аватар больше не нужен, перенос успешен
-	//
-	// 	let contentToReplace = target._targetElem.innerHTML;
-	// 	let contentToMove = avatarInfo.elem.innerHTML;
-	//
-	// 	target._targetElem.innerHTML = contentToMove;
-	// 	avatarInfo.dragZoneElem.innerHTML = contentToReplace;
-	//
-	// 	AppModel.updateSelectedCityDOMelem(target._targetElem);
-	//
-	// 	target._targetElem = null;
-	// }
+			let newDestination = findAncestor(currentTarget, destinationSelector);
 
-	transferItem(avatar, event) {
+			if (newDestination) {
+				return newDestination;
+			} else {
+				throw new Error('invalid destination');
+			}
+		}
+
+		return currentTarget;
+	}
+
+	transferItem(avatar) {
 
 		let city = AppModel.state.selectedCity;
 
 		let destination = avatar._currentTargetElem;
 
-		if (!destination.classList.contains('cities')) {
+		if (AppModel.isTransferToAnotherList) {
 
-			let newDestination = findAncestor(destination, 'cities');
+			let item = new ListItemView(city);
 
-			if (newDestination) {
-				destination = newDestination;
-			} else {
-				throw new Error('invalid destination');
-			}
+			item.marker = city.listItem.marker;
+
+			destination = this.getDestination(destination, 'cities');
+			destination.appendChild(item.elem);
+
+			item.showPopup = this.showPopup.bind(this, item);
+			item.bindEvents();
+
+			city.listItem.removeItem();
+
+			AppModel.updateSelectedCityDOMelem(item.elem);
+
+		} else {
+
+			destination = this.getDestination(destination, 'list-item');
+
+			let replacedItem = AppModel.getReplacedElem(destination);
+
+			let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+
+			AppModel.swapItems(currentList, city, replacedItem);
+
+			let temp = document.createElement('div');
+			city.listItem.elem.parentNode.insertBefore(temp, city.listItem.elem);
+			replacedItem.listItem.elem.parentNode.insertBefore(city.listItem.elem, replacedItem.listItem.elem);
+			temp.parentNode.insertBefore(replacedItem.listItem.elem, temp);
+			temp.parentNode.removeChild(temp);
 
 		}
 
-		let item = new ListItemView(city);
-
-		item.marker = city.listItem.marker;
-		destination.appendChild(item.elem);
-
-		item.bindEvents();
-
-		city.listItem.removeItem();
 		avatar.onDragEnd();
-
-		AppModel.updateSelectedCityDOMelem(item.elem);
-
-		// if (AppModel.state.isTransferToAnotherList) {
-		// 	this.transferToAnotherList(avatar);
-		// } else {
-		// 	this.transferThroughList(avatar, event);
-		// }
 
 	}
 
@@ -317,7 +288,7 @@ class Presenter {
 			if (newDropTarget && dropTarget) {
 
 				AppModel.setCitySelected();
-				this.transferItem(avatar);
+				this.transferItem(avatar, e);
 
 			}
 
@@ -343,7 +314,7 @@ class Presenter {
 				// эта функция обязана вызвать avatar.onDragEnd/onDragCancel
 				dropTarget.onDragEnd(avatar, e);
 
-				if (AppModel.state.isTransferToAnotherList) {
+				if (AppModel.isTransferToAnotherList) {
 					AppModel.endTransfer();
 				} else {
 					this.transferItem(avatar, e);
