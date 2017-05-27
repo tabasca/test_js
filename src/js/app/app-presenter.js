@@ -40,7 +40,6 @@ class Presenter {
 	}
 
 	clearList(listType = null) {
-
 		let citiesArr = null;
 
 		switch (listType) {
@@ -65,7 +64,6 @@ class Presenter {
 		});
 
 		AppModel.clearRenderedArr(listType);
-
 	}
 
 	renderList (cities, container, listType) {
@@ -99,7 +97,7 @@ class Presenter {
 	}
 
 	setFilterEnabled (evt) {
-		evt.preventDefault();
+		// evt.preventDefault();
 
 		let textToFilterBy = null;
 		let container = containerForCities;
@@ -130,7 +128,6 @@ class Presenter {
 
 				textToFilterBy = filterType;
 				filterType = FilterType.SEARCH;
-
 		}
 
 		AppModel.filterList(filterType, textToFilterBy);
@@ -145,7 +142,6 @@ class Presenter {
 	}
 
 	showPopup (item) {
-
 		if (AppModel.popup) {
 			this.destroyPopup();
 		}
@@ -233,36 +229,36 @@ class Presenter {
 		avatar.onDragEnd();
 	}
 
-	onMouseDown (e) {
-		if (e.which != 1) { // не левой кнопкой
+	onMouseDown (evt) {
+		if (evt.which != 1) { // не левой кнопкой
 			return false;
 		}
 
-		dragZone = this.findDragZone(e);
+		dragZone = this.findDragZone(evt);
 
 		if (!dragZone) {
 			return;
 		}
 
 		// запомним, что элемент нажат на текущих координатах pageX/pageY
-		downX = e.pageX;
-		downY = e.pageY;
+		downX = evt.pageX;
+		downY = evt.pageY;
 
 		return false;
 	}
 
-	onMouseMove (e) {
-		if (!dragZone) return; // элемент не зажат
+	onMouseMove (evt) {
+		if (!dragZone) return;
 
-		if (!avatar) { // элемент нажат, но пока не начали его двигать
-			if (Math.abs(e.pageX - downX) < 3 && Math.abs(e.pageY - downY) < 3) {
+		if (!avatar) {
+			if (Math.abs(evt.pageX - downX) < 3 && Math.abs(evt.pageY - downY) < 3) {
 				return;
 			}
-			// попробовать захватить элемент
-			avatar = dragZone.onDragStart(downX, downY, e);
 
-			if (!avatar) { // не получилось, значит перенос продолжать нельзя
-				this.cleanUp(); // очистить приватные переменные, связанные с переносом
+			avatar = dragZone.onDragStart(downX, downY, evt);
+
+			if (!avatar) {
+				this.cleanUp();
 				return;
 			}
 
@@ -272,19 +268,19 @@ class Presenter {
 			AppModel.passCityToTheModel(cityObj);
 		}
 
-		avatar.onDragMove(e);
+		avatar.onDragMove(evt);
 
-		var newDropTarget = this.findDropTarget(e);
+		var newDropTarget = this.findDropTarget(evt);
 
 		if (newDropTarget != dropTarget) {
 
-			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, e);
-			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, e);
+			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, evt);
+			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, evt);
 
 			if (newDropTarget && dropTarget) {
 
 				AppModel.setCitySelected();
-				this.transferItem(avatar, e);
+				this.transferItem(avatar);
 
 			}
 
@@ -292,27 +288,26 @@ class Presenter {
 
 		dropTarget = newDropTarget;
 
-		dropTarget && dropTarget.onDragMove(avatar, e);
+		dropTarget && dropTarget.onDragMove(avatar, evt);
 
 		return false;
 	}
 
-	onMouseUp (e) {
-		if (e.which != 1) { // не левой кнопкой
+	onMouseUp (evt) {
+		if (evt.which != 1) { // не левой кнопкой
 			return false;
 		}
 
-		if (avatar) { // если уже начали передвигать
+		if (avatar) {
 
 			if (dropTarget) {
-				// завершить перенос и избавиться от аватара, если это нужно
-				// эта функция обязана вызвать avatar.onDragEnd/onDragCancel
-				dropTarget.onDragEnd(avatar, e);
+
+				dropTarget.onDragEnd(avatar, evt);
 
 				if (AppModel.isTransferToAnotherList) {
 					AppModel.endTransfer();
 				} else {
-					this.transferItem(avatar, e);
+					this.transferItem(avatar, evt);
 				}
 
 			} else {
@@ -325,20 +320,18 @@ class Presenter {
 	}
 
 	cleanUp () {
-		// очистить все промежуточные объекты
 		dragZone = avatar = dropTarget = null;
 	}
 
-	findDragZone (event) {
-		var elem = event.target;
+	findDragZone (evt) {
+		var elem = evt.target;
 		while (elem != document && !elem.dragZone) {
 			elem = elem.parentNode;
 		}
 		return elem.dragZone;
 	}
 
-	findDropTarget (event) {
-		// получить элемент под аватаром
+	findDropTarget () {
 		var elem = avatar.getTargetElem();
 
 		while (elem != document && !elem.dropTarget) {

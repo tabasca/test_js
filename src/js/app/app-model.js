@@ -4,12 +4,10 @@ import { ListType, FilterType } from '../meta';
 
 export default class Model {
 	constructor (data = [], state = initialState) {
-
 		this._state = completeAssign({}, state);
 		this._baseCities = completeAssign({}, data);
 
 		this._baseCities = transformToArr(this._baseCities);
-
 	}
 
 	get state () {
@@ -73,7 +71,6 @@ export default class Model {
 	}
 
 	filterList (filterType, filterSymbols) {
-
 		switch (filterType) {
 			case FilterType.ASCENDING:
 
@@ -108,19 +105,14 @@ export default class Model {
 
 				this._state.activeBaseFilter = '';
 				this._state.activeSelectedFilter = '';
-
 		}
-
 	}
 
 	sortAlphabetically (filterType) {
-
 		this._state.filteredBaseCities = sortArr(this._baseCities, filterType);
-
 	}
 
 	filterByText (text) {
-
 		let that = this;
 
 		this._state.filteredBaseCities = [];
@@ -139,7 +131,6 @@ export default class Model {
 	}
 
 	filterByFeature (features) {
-
 		if (!features.length) {
 			this._state.filteredSelectedCities = this._state.selectedCities;
 			return false;
@@ -160,7 +151,6 @@ export default class Model {
 	}
 
 	swapItems (list, a, b) {
-
 		switch (list) {
 			case 'cities':
 				list = this._state.filteredBaseCities.length ? this._state.filteredBaseCities : this._state.filteredBaseCities = completeAssign({}, this._baseCities);
@@ -176,7 +166,6 @@ export default class Model {
 	}
 
 	setCitySelected () {
-
 		let that = this;
 		let counter = 0;
 
@@ -243,9 +232,7 @@ export default class Model {
 	}
 
 	updateSelectedCityDOMelem(newItem) {
-
 		this._state.selectedCity.listItem.elem = newItem;
-
 	}
 
 }

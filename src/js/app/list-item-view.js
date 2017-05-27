@@ -1,11 +1,11 @@
 import { getElementFromTemplate } from '../utils';
 
 export default class ListItemView {
-	constructor(data) {
+	constructor (data) {
 		this.data = data;
 	}
 
-	get elem() {
+	get elem () {
 		if (!this._elem) {
 
 			this.name = this.data.name;
@@ -27,16 +27,15 @@ export default class ListItemView {
 		return this._elem;
 	}
 
-	set elem(data) {
+	set elem (data) {
 		return this._elem = data;
 	}
 
-	set showPopup(handler) {
+	set showPopup (handler) {
 		return this._showPopup = handler;
 	}
 
-	get featuresForFilter() {
-
+	get featuresForFilter () {
 		this._featuresForFilter = [];
 		let featureNames = [];
 
@@ -64,10 +63,9 @@ export default class ListItemView {
 		});
 
 		return this._featuresForFilter = featureNames;
-
 	}
 
-	getFeatures(list) {
+	getFeatures (list) {
 
 		let feature = '';
 		let counter = 0;
@@ -81,8 +79,7 @@ export default class ListItemView {
 		return feature;
 	}
 
-	getMarkup() {
-
+	getMarkup () {
 		return `<article class="list-item">
 		    <div class="list-item-handle"></div>
 		    <h3 class="list-item-title">
@@ -95,8 +92,7 @@ export default class ListItemView {
 		  </article>`;
 	}
 
-	getPopupMarkup() {
-
+	getPopupMarkup () {
 		return `<div class="popup" role="popup" aria-labellebby="popup-title">
 				  <h3 class="popup-title" id="popup-title">
 				    <span class="popup-title-name">${this.name}</span>,
@@ -108,23 +104,23 @@ export default class ListItemView {
 				</div>`;
 	}
 
-	onItemMouseover() {
+	onItemMouseover () {
 		this.marker.classList.add('marker-hovered');
 	}
 
-	onItemMouseout() {
+	onItemMouseout () {
 		this.marker.classList.remove('marker-hovered');
 	}
 
-	onMarkerMouseover() {
+	onMarkerMouseover () {
 		this._elem.classList.add('item-hovered');
 	}
 
-	onMarkerMouseout() {
+	onMarkerMouseout () {
 		this._elem.classList.remove('item-hovered');
 	}
 
-	bindEvents() {
+	bindEvents () {
 		this._elem.addEventListener('mouseover', this.onItemMouseover);
 		this._elem.addEventListener('mouseout', this.onItemMouseout);
 
@@ -135,7 +131,7 @@ export default class ListItemView {
 		this.marker.addEventListener('click', this._showPopup);
 	}
 
-	unbindEvents() {
+	unbindEvents () {
 		this._elem.removeEventListener('mouseover', this.onItemMouseover);
 		this._elem.removeEventListener('mouseout', this.onItemMouseout);
 
@@ -146,10 +142,8 @@ export default class ListItemView {
 		this.marker.removeEventListener('click', this._showPopup);
 	}
 
-	removeItem() {
-
+	removeItem () {
 		this.unbindEvents();
-
 		this._elem.remove();
 	}
 }

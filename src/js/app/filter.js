@@ -1,18 +1,16 @@
 export default class Filter {
-	constructor() {
-
+	constructor () {
 		this.ascFilterBtn = document.getElementById('cities-sort-asc');
 		this.descFilterBtn = document.getElementById('cities-sort-desc');
 		this.searchInput = document.querySelector('.cities-filters-name');
 		this.featureFilters = document.querySelectorAll('[name="cities-features"]');
-
 	}
 
-	set setFilterEnabled(handler) {
+	set setFilterEnabled (handler) {
 		return this._setFilterEnabled = handler;
 	}
 
-	bindEvents() {
+	bindEvents () {
 		let that = this;
 
 		this.ascFilterBtn.addEventListener('click', this._setFilterEnabled);
@@ -24,7 +22,7 @@ export default class Filter {
 		}
 	}
 
-	unbindEvents() {
+	unbindEvents () {
 		let that = this;
 
 		this.ascFilterBtn.removeEventListener('click', this._setFilterEnabled);
@@ -35,6 +33,4 @@ export default class Filter {
 			that.featureFilters[i].removeEventListener('change', that._setFilterEnabled);
 		}
 	}
-
-
 }
