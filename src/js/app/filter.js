@@ -22,6 +22,20 @@ export default class Filter {
 		}
 	}
 
+	resetBaseFilters () {
+		this.ascFilterBtn.checked = false;
+		this.descFilterBtn.checked = false;
+		this.searchInput.value = '';
+	}
+
+	resetFeaturesFilter () {
+		let that = this;
+
+		for (let i = 0; i < this.featureFilters.length; i++) {
+			that.featureFilters[i].checked = false;
+		}
+	}
+
 	unbindEvents () {
 		let that = this;
 

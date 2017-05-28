@@ -13,6 +13,7 @@ import ListDropTarget from '../dragndrop/ListDropTarget';
 let AppModel;
 let AppMap;
 let App;
+let filter;
 
 let containerForCities = document.getElementById('cities');
 let containerForSelectedCities = document.querySelector('.cities-selected');
@@ -122,7 +123,7 @@ class Presenter {
 	}
 
 	initFilters () {
-		let filter = new Filter();
+		filter = new Filter();
 
 		filter.setFilterEnabled = this.setFilterEnabled.bind(this);
 
@@ -218,12 +219,14 @@ class Presenter {
 
 	resetBaseFilters () {
 		AppModel.resetFilters(ListType.BASE);
+		filter.resetBaseFilters();
 
 		this.renderList(AppModel.cities, containerForCities, ListType.BASE);
 	}
 
 	resetSelectedFilters () {
 		AppModel.resetFilters(ListType.SELECTED);
+		filter.resetFeaturesFilter();
 
 		if (AppModel.state.selectedCities.length) {
 			this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
