@@ -65,7 +65,7 @@ class Presenter {
 
 		citiesArr.map(function (city) {
 			city.listItem.removeItem();
-			city.listItem.marker.remove();
+			city.marker.classList.add('marker-invalid');
 		});
 
 		AppModel.clearRenderedArr(listType);
@@ -110,9 +110,16 @@ class Presenter {
 			let item = new ListItemView(city);
 
 			container.appendChild(item.elem);
-			AppMap.addMarker(city);
 
-			item.marker = AppMap._marker._icon;
+			if (!city.marker) {
+				AppMap.addMarker(city);
+				item.marker = AppMap._marker._icon;
+				city.marker = item.marker;
+			} else {
+				item.marker = city.marker;
+			}
+
+			city.marker.classList.remove('marker-invalid');
 
 			item.showPopup = that.showPopup.bind(that, item);
 			item.bindEvents(item);
