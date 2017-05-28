@@ -18,14 +18,39 @@ export default class Model {
 		return this._baseCities;
 	}
 
-	updateRenderedList (city, listType) {
-		switch (listType) {
+	updateRenderedList (city, listToAdd, listToSplice) {
+		let counter;
+		let that = this;
+		switch (listToAdd) {
 			case ListType.BASE:
 				this._state.renderedBaseCities.push(city);
 				break;
 			case ListType.SELECTED:
 				this._state.renderedSelectedCities.push(city);
 				break;
+		}
+
+		if (listToSplice) {
+			switch (listToSplice) {
+				case ListType.BASE:
+
+					this._state.renderedBaseCities.some(function (city, index) {
+						counter = index;
+						return city.name === that._state.selectedCity.name;
+					});
+
+					this._state.renderedBaseCities.splice(counter, 1);
+					break;
+				case ListType.SELECTED:
+
+					this._state.renderedSelectedCities.some(function (city, index) {
+						counter = index;
+						return city.name === that._state.selectedCity.name;
+					});
+
+					this._state.renderedSelectedCities.splice(counter, 1);
+					break;
+			}
 		}
 	}
 
@@ -196,20 +221,9 @@ export default class Model {
 				this._state.filteredBaseCities.push(this._state.selectedCity);
 			}
 
-			if (this._state.renderedBaseCities.length) {
-				this._state.renderedBaseCities.push(this._state.selectedCity);
-			}
-
-			this._state.renderedSelectedCities.some(function (city, index) {
-				counter = index;
-				return city.name === that._state.selectedCity.name;
-			});
-			this._state.renderedSelectedCities.splice(counter, 1);
-
 			this._state.selectedCity.isSelected = false;
 		} else {
 			this._state.selectedCities.push(this._state.selectedCity);
-			this._state.renderedSelectedCities.push(this._state.selectedCity);
 
 			this._baseCities.some(function (city, index) {
 				counter = index;
@@ -224,14 +238,6 @@ export default class Model {
 					return city.name === that._state.selectedCity.name;
 				});
 				this._state.filteredBaseCities.splice(counter, 1);
-			}
-
-			if (this._state.renderedBaseCities.length) {
-				this._state.renderedBaseCities.some(function (city, index) {
-					counter = index;
-					return city.name === that._state.selectedCity.name;
-				});
-				this._state.renderedBaseCities.splice(counter, 1);
 			}
 
 			this._state.selectedCity.isSelected = true;

@@ -126,6 +126,14 @@ class Presenter {
 
 			city.listItem = item;
 			AppModel.updateRenderedList(city, listType);
+
+			if (AppModel.state.renderedBaseCities.length === 0) {
+				filter.resetBaseFilters();
+			}
+
+			if (AppModel.state.selectedCities.length && AppModel.state.renderedSelectedCities.length === 0) {
+				filter.resetFeaturesFilter();
+			}
 		});
 	}
 
@@ -243,6 +251,7 @@ class Presenter {
 	transferItem (avatar, evt) {
 		let city = AppModel.state.selectedCity;
 		let destination = avatar._currentTargetElem;
+		let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
 		if (AppModel.isTransferToAnotherList) {
 
@@ -271,11 +280,23 @@ class Presenter {
 					break;
 			}
 
+			AppModel.updateRenderedList(city, dropList, currentList);
+
+			console.log('AppModel.state.renderedBaseCities: ', AppModel.state.renderedBaseCities);
+			console.log('AppModel.state.selectedCities: ', AppModel.state.selectedCities);
+			console.log('AppModel.state.renderedSelectedCities: ', AppModel.state.renderedSelectedCities);
+
+			if (AppModel.state.renderedBaseCities.length === 0) {
+				filter.resetBaseFilters();
+			}
+
+			if (AppModel.state.renderedSelectedCities.length === 0) {
+				filter.resetFeaturesFilter();
+			}
+
 		} else {
 
 			destination = this.getDestination(destination, 'list-item');
-			let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
-
 			let replacedItem = AppModel.getCityObject(destination, currentList);
 
 			if (replacedItem === city || !replacedItem) {
