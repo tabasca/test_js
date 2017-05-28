@@ -83,10 +83,10 @@ export default class Model {
 
 		switch (list) {
 			case 'cities':
-				list = this._state.filteredBaseCities.length ? this._state.filteredBaseCities : this._state.filteredBaseCities = completeAssign({}, this._baseCities);
+				list = this._state.renderedBaseCities;
 				break;
 			case 'cities-selected':
-				list = this._state.filteredSelectedCities.length ? this._state.filteredSelectedCities : this._state.filteredSelectedCities = completeAssign({}, this._state.selectedCities);
+				list = this._state.renderedSelectedCities;
 				break;
 		}
 
@@ -147,7 +147,7 @@ export default class Model {
 	}
 
 	sortAlphabetically (filterType) {
-		this._state.filteredBaseCities = sortArr(this._baseCities, filterType);
+		this._state.filteredBaseCities = sortArr(this._state.renderedBaseCities, filterType);
 	}
 
 	filterByText (text) {
@@ -157,7 +157,7 @@ export default class Model {
 
 		if (!text.length) {
 
-			this._state.filteredBaseCities = this._baseCities;
+			this._state.filteredBaseCities = this._state.renderedBaseCities;
 			return;
 		}
 
@@ -191,10 +191,10 @@ export default class Model {
 	swapItems (list, a, b) {
 		switch (list) {
 			case 'cities':
-				list = this._state.filteredBaseCities.length ? this._state.filteredBaseCities : this._state.filteredBaseCities = completeAssign({}, this._baseCities);
+				list = this._state.renderedBaseCities;
 				break;
 			case 'cities-selected':
-				list = this._state.filteredSelectedCities.length ? this._state.filteredSelectedCities : this._state.filteredSelectedCities = completeAssign({}, this._state.selectedCities);
+				list = this._state.renderedSelectedCities;
 				break;
 		}
 
@@ -215,30 +215,10 @@ export default class Model {
 		if (isCityAlreadySelected) {
 
 			this._state.selectedCities.splice(counter, 1);
-			this._baseCities.push(this._state.selectedCity);
-
-			if (this._state.filteredBaseCities.length) {
-				this._state.filteredBaseCities.push(this._state.selectedCity);
-			}
 
 			this._state.selectedCity.isSelected = false;
 		} else {
 			this._state.selectedCities.push(this._state.selectedCity);
-
-			this._baseCities.some(function (city, index) {
-				counter = index;
-				return city.name === that._state.selectedCity.name;
-			});
-
-			this._baseCities.splice(counter, 1);
-
-			if (this._state.filteredBaseCities.length) {
-				this._state.filteredBaseCities.some(function (city, index) {
-					counter = index;
-					return city.name === that._state.selectedCity.name;
-				});
-				this._state.filteredBaseCities.splice(counter, 1);
-			}
 
 			this._state.selectedCity.isSelected = true;
 		}

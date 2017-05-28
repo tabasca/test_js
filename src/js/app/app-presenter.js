@@ -133,6 +133,7 @@ class Presenter {
 
 			if (AppModel.state.selectedCities.length && AppModel.state.renderedSelectedCities.length === 0) {
 				filter.resetFeaturesFilter();
+				this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
 			}
 		});
 	}
@@ -282,16 +283,17 @@ class Presenter {
 
 			AppModel.updateRenderedList(city, dropList, currentList);
 
-			console.log('AppModel.state.renderedBaseCities: ', AppModel.state.renderedBaseCities);
-			console.log('AppModel.state.selectedCities: ', AppModel.state.selectedCities);
-			console.log('AppModel.state.renderedSelectedCities: ', AppModel.state.renderedSelectedCities);
-
 			if (AppModel.state.renderedBaseCities.length === 0) {
 				filter.resetBaseFilters();
 			}
 
 			if (AppModel.state.renderedSelectedCities.length === 0) {
+
 				filter.resetFeaturesFilter();
+
+				if (AppModel.state.selectedCities.length) {
+					this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+				}
 			}
 
 		} else {
