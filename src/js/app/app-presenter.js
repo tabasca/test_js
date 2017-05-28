@@ -1,5 +1,6 @@
 import Model from './app-model';
 import ListItemView from './list-item-view';
+import ErrorItemView from './error-item-view';
 import Map from './map';
 import Filter from './filter';
 import { ListType, FilterType } from '../meta';
@@ -18,6 +19,9 @@ let containerForSelectedCities = document.querySelector('.cities-selected');
 
 let dragZone, avatar, dropTarget;
 let downX, downY;
+
+let baseListError;
+let selectedListError;
 
 class Presenter {
 
@@ -70,6 +74,31 @@ class Presenter {
 		this.clearList(listType);
 
 		let that = this;
+
+		switch (listType) {
+			case ListType.BASE:
+				if (baseListError) {
+					baseListError.removeItem();
+					baseListError = null;
+				}
+
+				if (!cities.length) {
+					baseListError = new ErrorItemView();
+					container.appendChild(baseListError.elem);
+				}
+				break;
+			case ListType.SELECTED:
+				if (selectedListError) {
+					selectedListError.removeItem();
+					selectedListError = null;
+				}
+
+				if (!cities.length && AppModel.state.activeSelectedFilter.length) {
+					selectedListError = new ErrorItemView();
+					container.appendChild(selectedListError.elem);
+				}
+				break;
+		}
 
 		cities.map(function (city) {
 
@@ -183,9 +212,8 @@ class Presenter {
 		return currentTarget;
 	}
 
-	transferItem (avatar) {
+	transferItem (avatar, evt) {
 		let city = AppModel.state.selectedCity;
-
 		let destination = avatar._currentTargetElem;
 
 		if (AppModel.isTransferToAnotherList) {
@@ -202,12 +230,22 @@ class Presenter {
 
 			city.listItem.removeItem();
 
+			let dropList = this.findDropTarget(evt)._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+
 			AppModel.updateSelectedCityDOMelem(item.elem);
+
+			switch (dropList) {
+				case 'cities':
+					baseListError && baseListError.removeItem();
+					break;
+				case 'cities-selected':
+					selectedListError && selectedListError.removeItem();
+					break;
+			}
 
 		} else {
 
 			destination = this.getDestination(destination, 'list-item');
-
 			let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
 			let replacedItem = AppModel.getCityObject(destination, currentList);
@@ -280,7 +318,7 @@ class Presenter {
 			if (newDropTarget && dropTarget) {
 
 				AppModel.setCitySelected();
-				this.transferItem(avatar);
+				this.transferItem(avatar, evt);
 
 			}
 
