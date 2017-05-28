@@ -1,149 +1,145 @@
 import { getElementFromTemplate } from '../utils';
 
 export default class ListItemView {
-	constructor (data) {
-		this.data = data;
-	}
+  constructor (data) {
+    this.data = data;
+  }
 
-	get elem () {
-		if (!this._elem) {
+  get elem () {
+    if (!this._elem) {
+      this.name = this.data.name;
+      this.temperature = this.data.weather;
+      this.featuresArr = this.data.features;
 
-			this.name = this.data.name;
-			this.temperature = this.data.weather;
-			this.featuresArr = this.data.features;
+      this._elem = getElementFromTemplate(this.getMarkup());
 
-			this._elem = getElementFromTemplate(this.getMarkup());
+      this.onItemMouseover = this.onItemMouseover.bind(this);
+      this.onItemMouseout = this.onItemMouseout.bind(this);
 
-			this.onItemMouseover = this.onItemMouseover.bind(this);
-			this.onItemMouseout = this.onItemMouseout.bind(this);
+      this.onMarkerMouseover = this.onMarkerMouseover.bind(this);
+      this.onMarkerMouseout = this.onMarkerMouseout.bind(this);
 
-			this.onMarkerMouseover = this.onMarkerMouseover.bind(this);
-			this.onMarkerMouseout = this.onMarkerMouseout.bind(this);
+      this.removeItem = this.removeItem.bind(this);
+    }
 
-			this.removeItem = this.removeItem.bind(this);
+    return this._elem;
+  }
 
-		}
+  set elem (data) {
+    this._elem = data;
+    return this._elem;
+  }
 
-		return this._elem;
-	}
+  set showPopup (handler) {
+    this._showPopup = handler;
+    return this._showPopup;
+  }
 
-	set elem (data) {
-		return this._elem = data;
-	}
+  get featuresForFilter () {
+    this._featuresForFilter = [];
+    let featureNames = [];
 
-	set showPopup (handler) {
-		return this._showPopup = handler;
-	}
+    this.featuresArr.map(function (feature) {
+      switch (feature) {
+        case '☄️':
+          featureNames.push('meteor');
+          break;
+        case '☀️':
+          featureNames.push('sun');
+          break;
+        case '❄️':
+          featureNames.push('snow');
+          break;
+        case '💧':
+          featureNames.push('rain');
+          break;
+        case '🌥':
+          featureNames.push('cloud');
+          break;
+        case '🌬':
+          featureNames.push('wind');
+          break;
+      }
+    });
+    this._featuresForFilter = featureNames;
+    return this._featuresForFilter;
+  }
 
-	get featuresForFilter () {
-		this._featuresForFilter = [];
-		let featureNames = [];
+  getFeatures (list) {
+    let feature = '';
 
-		this.featuresArr.map(function (feature) {
-			switch (feature) {
-				case '☄️':
-					featureNames.push('meteor');
-					break;
-				case '☀️':
-					featureNames.push('sun');
-					break;
-				case '❄️':
-					featureNames.push('snow');
-					break;
-				case '💧':
-					featureNames.push('rain');
-					break;
-				case '🌥':
-					featureNames.push('cloud');
-					break;
-				case '🌬':
-					featureNames.push('wind');
-					break;
-			}
-		});
+    for (let it of list) {
+      feature += `<span class="list-item-feature">${it}</span>`;
+    }
 
-		return this._featuresForFilter = featureNames;
-	}
+    return feature;
+  }
 
-	getFeatures (list) {
+  getMarkup () {
+    return `<article class="list-item">
+        <div class="list-item-handle"></div>
+        <h3 class="list-item-title">
+          <span class="list-item-name">${this.name}</span>,
+          <span class="list-item-weather">${this.temperature}</span>
+        </h3>
+        <div class="list-item-features">
+          ${this.getFeatures(this.featuresArr)}
+        </div>
+      </article>`;
+  }
 
-		let feature = '';
-		let counter = 0;
+  getPopupMarkup () {
+    return `<div class="popup" role="popup" aria-labellebby="popup-title">
+          <h3 class="popup-title" id="popup-title">
+            <span class="popup-title-name">${this.name}</span>,
+            <span class="popup-title-weather">${this.temperature}</span>
+          </h3>
+          <div class="popup-features">
+            ${this.getFeatures(this.featuresArr)}
+          </div>
+        </div>`;
+  }
 
-		for (let it of list) {
-			counter++;
+  onItemMouseover () {
+    this.marker.classList.add('marker-hovered');
+  }
 
-			feature += `<span class="list-item-feature">${it}️</span>`;
-		}
+  onItemMouseout () {
+    this.marker.classList.remove('marker-hovered');
+  }
 
-		return feature;
-	}
+  onMarkerMouseover () {
+    this._elem.classList.add('item-hovered');
+  }
 
-	getMarkup () {
-		return `<article class="list-item">
-		    <div class="list-item-handle"></div>
-		    <h3 class="list-item-title">
-		      <span class="list-item-name">${this.name}</span>,
-		      <span class="list-item-weather">${this.temperature}</span>
-		    </h3>
-		    <div class="list-item-features">
-		      ${this.getFeatures(this.featuresArr)}
-		    </div>
-		  </article>`;
-	}
+  onMarkerMouseout () {
+    this._elem.classList.remove('item-hovered');
+  }
 
-	getPopupMarkup () {
-		return `<div class="popup" role="popup" aria-labellebby="popup-title">
-				  <h3 class="popup-title" id="popup-title">
-				    <span class="popup-title-name">${this.name}</span>,
-				    <span class="popup-title-weather">${this.temperature}</span>
-				  </h3>
-				  <div class="popup-features">
-				    ${this.getFeatures(this.featuresArr)}
-				  </div>
-				</div>`;
-	}
+  bindEvents () {
+    this._elem.addEventListener('mouseover', this.onItemMouseover);
+    this._elem.addEventListener('mouseout', this.onItemMouseout);
 
-	onItemMouseover () {
-		this.marker.classList.add('marker-hovered');
-	}
+    this.marker.addEventListener('mouseover', this.onMarkerMouseover);
+    this.marker.addEventListener('mouseout', this.onMarkerMouseout);
 
-	onItemMouseout () {
-		this.marker.classList.remove('marker-hovered');
-	}
+    this._elem.addEventListener('click', this._showPopup);
+    this.marker.addEventListener('click', this._showPopup);
+  }
 
-	onMarkerMouseover () {
-		this._elem.classList.add('item-hovered');
-	}
+  unbindEvents () {
+    this._elem.removeEventListener('mouseover', this.onItemMouseover);
+    this._elem.removeEventListener('mouseout', this.onItemMouseout);
 
-	onMarkerMouseout () {
-		this._elem.classList.remove('item-hovered');
-	}
+    this.marker.removeEventListener('mouseover', this.onMarkerMouseover);
+    this.marker.removeEventListener('mouseout', this.onMarkerMouseout);
 
-	bindEvents () {
-		this._elem.addEventListener('mouseover', this.onItemMouseover);
-		this._elem.addEventListener('mouseout', this.onItemMouseout);
+    this._elem.removeEventListener('click', this._showPopup);
+    this.marker.removeEventListener('click', this._showPopup);
+  }
 
-		this.marker.addEventListener('mouseover', this.onMarkerMouseover);
-		this.marker.addEventListener('mouseout', this.onMarkerMouseout);
-
-		this._elem.addEventListener('click', this._showPopup);
-		this.marker.addEventListener('click', this._showPopup);
-	}
-
-	unbindEvents () {
-		this._elem.removeEventListener('mouseover', this.onItemMouseover);
-		this._elem.removeEventListener('mouseout', this.onItemMouseout);
-
-		this.marker.removeEventListener('mouseover', this.onMarkerMouseover);
-		this.marker.removeEventListener('mouseout', this.onMarkerMouseout);
-
-		this._elem.removeEventListener('click', this._showPopup);
-		this.marker.removeEventListener('click', this._showPopup);
-	}
-
-	removeItem () {
-		this.unbindEvents();
-		this._elem.remove();
-	}
+  removeItem () {
+    this.unbindEvents();
+    this._elem.remove();
+  }
 }

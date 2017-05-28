@@ -6,7 +6,7 @@ import Filter from './filter';
 import { ListType, FilterType } from '../meta';
 import { transformToArr, getCoords, getElementFromTemplate, findAncestor } from '../utils';
 
-//draganddrop in OOP from learnjavascript.ru
+// draganddrop in OOP from learnjavascript.ru
 import ListDragZone from '../dragndrop/ListDragZone';
 import ListDropTarget from '../dragndrop/ListDropTarget';
 
@@ -25,422 +25,407 @@ let baseListError;
 let selectedListError;
 
 class Presenter {
+  init (app) {
+    App = app;
+    AppModel = new Model(App.data);
+    AppMap = new Map();
+
+    if (AppModel.state.selectedCities.length) {
+      this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+    }
+
+    this.renderList(AppModel.cities, containerForCities, ListType.BASE);
+
+    this.initFilters();
+
+    this.bindHandlers = this.bindHandlers.bind(this);
+    this.bindHandlers();
+    this.addDragAndDrop();
+  }
+
+  clearList (listType = null) {
+    let citiesArr = null;
+
+    switch (listType) {
+      case ListType.BASE:
+        citiesArr = AppModel.state.renderedBaseCities;
+        break;
+      case ListType.SELECTED:
+        citiesArr = AppModel.state.renderedSelectedCities;
+        break;
+
+      default:
+        citiesArr = [];
+        return false;
+    }
+
+    citiesArr = transformToArr(citiesArr);
+
+    citiesArr.map(function (city) {
+      city.listItem.removeItem();
+      city.marker.classList.add('marker-invalid');
+    });
 
-	init(app) {
-		App = app;
-		AppModel = new Model(App.data);
-		AppMap = new Map();
-
-		if (AppModel.state.selectedCities.length) {
-			this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-		}
-
-		this.renderList(AppModel.cities, containerForCities, ListType.BASE);
-
-		this.initFilters();
-
-		this.bindHandlers = this.bindHandlers.bind(this);
-		this.bindHandlers();
-		this.addDragAndDrop();
-	}
-
-	clearList(listType = null) {
-		let citiesArr = null;
-
-		switch (listType) {
-			case ListType.BASE:
-				citiesArr = AppModel.state.renderedBaseCities;
-				break;
-			case ListType.SELECTED:
-				citiesArr = AppModel.state.renderedSelectedCities;
-				break;
-
-			default:
-				citiesArr = [];
-				return false;
+    AppModel.clearRenderedArr(listType);
+  }
 
-		}
+  renderList (cities, container, listType) {
+    this.clearList(listType);
 
-		citiesArr = transformToArr(citiesArr);
+    let that = this;
 
-		citiesArr.map(function (city) {
-			city.listItem.removeItem();
-			city.marker.classList.add('marker-invalid');
-		});
+    switch (listType) {
+      case ListType.BASE:
+        if (baseListError) {
+          baseListError.removeItem();
+          baseListError = null;
+        }
 
-		AppModel.clearRenderedArr(listType);
-	}
+        if (!cities.length) {
+          baseListError = new ErrorItemView();
+          container.appendChild(baseListError.elem);
+          baseListError.onResetFiltersBtnClick = this.resetBaseFilters.bind(this);
+          baseListError.bindEvents();
+        }
+        break;
+      case ListType.SELECTED:
+        if (selectedListError) {
+          selectedListError.removeItem();
+          selectedListError = null;
+        }
 
-	renderList (cities, container, listType) {
-		this.clearList(listType);
+        if (!cities.length && AppModel.state.activeSelectedFilter.length) {
+          selectedListError = new ErrorItemView();
+          container.appendChild(selectedListError.elem);
+          selectedListError.onResetFiltersBtnClick = this.resetSelectedFilters.bind(this);
+          selectedListError.bindEvents();
+        }
+        break;
+    }
 
-		let that = this;
+    cities.map(function (city) {
+      let item = new ListItemView(city);
 
-		switch (listType) {
-			case ListType.BASE:
-				if (baseListError) {
-					baseListError.removeItem();
-					baseListError = null;
-				}
+      container.appendChild(item.elem);
 
-				if (!cities.length) {
-					baseListError = new ErrorItemView();
-					container.appendChild(baseListError.elem);
-					baseListError.onResetFiltersBtnClick = this.resetBaseFilters.bind(this);
-					baseListError.bindEvents();
-				}
-				break;
-			case ListType.SELECTED:
-				if (selectedListError) {
-					selectedListError.removeItem();
-					selectedListError = null;
-				}
+      if (!city.marker) {
+        AppMap.addMarker(city);
+        item.marker = AppMap._marker._icon;
+        city.marker = item.marker;
+      } else {
+        item.marker = city.marker;
+      }
 
-				if (!cities.length && AppModel.state.activeSelectedFilter.length) {
-					selectedListError = new ErrorItemView();
-					container.appendChild(selectedListError.elem);
-					selectedListError.onResetFiltersBtnClick = this.resetSelectedFilters.bind(this);
-					selectedListError.bindEvents();
-				}
-				break;
-		}
+      city.marker.classList.remove('marker-invalid');
 
-		cities.map(function (city) {
+      item.showPopup = that.showPopup.bind(that, item);
+      item.bindEvents(item);
 
-			let item = new ListItemView(city);
+      city.listItem = item;
+      AppModel.updateRenderedList(city, listType);
 
-			container.appendChild(item.elem);
+      if (AppModel.state.renderedBaseCities.length === 0) {
+        filter.resetBaseFilters();
+      }
 
-			if (!city.marker) {
-				AppMap.addMarker(city);
-				item.marker = AppMap._marker._icon;
-				city.marker = item.marker;
-			} else {
-				item.marker = city.marker;
-			}
+      if (AppModel.state.selectedCities.length && AppModel.state.renderedSelectedCities.length === 0) {
+        filter.resetFeaturesFilter();
+        this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+      }
+    });
+  }
 
-			city.marker.classList.remove('marker-invalid');
+  initFilters () {
+    filter = new Filter();
 
-			item.showPopup = that.showPopup.bind(that, item);
-			item.bindEvents(item);
+    filter.setFilterEnabled = this.setFilterEnabled.bind(this);
 
-			city.listItem = item;
-			AppModel.updateRenderedList(city, listType);
+    filter.bindEvents();
+  }
 
-			if (AppModel.state.renderedBaseCities.length === 0) {
-				filter.resetBaseFilters();
-			}
+  setFilterEnabled (evt) {
+    // evt.preventDefault();
 
-			if (AppModel.state.selectedCities.length && AppModel.state.renderedSelectedCities.length === 0) {
-				filter.resetFeaturesFilter();
-				this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-			}
-		});
-	}
+    let textToFilterBy = null;
+    let container = containerForCities;
 
-	initFilters () {
-		filter = new Filter();
+    let listType = ListType.BASE;
+    let filterType = evt.target.value;
 
-		filter.setFilterEnabled = this.setFilterEnabled.bind(this);
+    let selectedFlag = false;
 
-		filter.bindEvents();
-	}
+    switch (filterType) {
+      case FilterType.ASCENDING:
 
-	setFilterEnabled (evt) {
-		// evt.preventDefault();
+        break;
 
-		let textToFilterBy = null;
-		let container = containerForCities;
+      case FilterType.DESCENDING:
 
-		let listType = ListType.BASE;
-		let filterType = evt.target.value;
+        break;
 
-		let selectedFlag = false;
+      case FilterType.FEATURE.sun: case FilterType.FEATURE.cloud: case FilterType.FEATURE.meteor: case FilterType.FEATURE.rain: case FilterType.FEATURE.wind: case FilterType.FEATURE.snow:
+        selectedFlag = true;
 
-		switch (filterType) {
-			case FilterType.ASCENDING:
+        container = containerForSelectedCities;
+        listType = ListType.SELECTED;
 
-				break;
+        break;
 
-			case FilterType.DESCENDING:
+      default:
 
-				break;
+        textToFilterBy = filterType;
+        filterType = FilterType.SEARCH;
+    }
 
-			case FilterType.FEATURE.sun: case FilterType.FEATURE.cloud: case FilterType.FEATURE.meteor: case FilterType.FEATURE.rain: case FilterType.FEATURE.wind: case FilterType.FEATURE.snow:
-				selectedFlag = true;
+    AppModel.filterList(filterType, textToFilterBy);
 
-				container = containerForSelectedCities;
-				listType = ListType.SELECTED;
+    let cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
 
-				break;
+    this.renderList(cities, container, listType);
+  }
 
-			default:
+  getMarkerPosition (item) {
+    return getCoords(item.marker);
+  }
 
-				textToFilterBy = filterType;
-				filterType = FilterType.SEARCH;
-		}
+  showPopup (item) {
+    if (AppModel.popup) {
+      this.destroyPopup();
+    }
 
-		AppModel.filterList(filterType, textToFilterBy);
+    let popup = getElementFromTemplate(item.getPopupMarkup());
+    document.body.appendChild(popup);
 
-		let cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
+    let popupCoords = this.getMarkerPosition(item);
+    popup.style.left = popupCoords.left + 'px';
+    popup.style.top = popupCoords.top + 'px';
 
-		this.renderList(cities, container, listType);
-	}
+    AppModel.popup = popup;
+  }
 
-	getMarkerPosition (item) {
-		return getCoords(item.marker);
-	}
+  destroyPopup () {
+    AppModel.popup.remove();
+  }
 
-	showPopup (item) {
-		if (AppModel.popup) {
-			this.destroyPopup();
-		}
+  addDragAndDrop () {
+    /* eslint-disable */
+    let baseListDragZone = new ListDragZone(containerForCities);
+    let baseListDropTarget = new ListDropTarget(containerForCities);
 
-		let popup = getElementFromTemplate(item.getPopupMarkup());
-		document.body.appendChild(popup);
+    let selectedListDragZone = new ListDragZone(containerForSelectedCities);
+    let selectedListDropTarget = new ListDropTarget(containerForSelectedCities);
+    /* eslint-enable */
+  }
 
-		let popupCoords = this.getMarkerPosition(item);
-		popup.style.left = popupCoords.left + 'px';
-		popup.style.top = popupCoords.top + 'px';
+  getDestination (currentTarget, destinationSelector) {
+    if (!currentTarget.classList.contains(destinationSelector)) {
+      let newDestination = findAncestor(currentTarget, destinationSelector);
 
-		AppModel.popup = popup;
-	}
+      if (newDestination) {
+        return newDestination;
+      } else {
+        return false;
+      }
+    }
 
-	destroyPopup () {
-		AppModel.popup.remove();
-	}
+    return currentTarget;
+  }
 
-	addDragAndDrop () {
-		new ListDragZone(containerForCities);
-		new ListDropTarget(containerForCities);
+  resetBaseFilters () {
+    AppModel.resetFilters(ListType.BASE);
+    filter.resetBaseFilters();
 
-		new ListDragZone(containerForSelectedCities);
-		new ListDropTarget(containerForSelectedCities);
-	}
+    this.renderList(AppModel.cities, containerForCities, ListType.BASE);
+  }
 
-	getDestination (currentTarget, destinationSelector) {
-		if (!currentTarget.classList.contains(destinationSelector)) {
+  resetSelectedFilters () {
+    AppModel.resetFilters(ListType.SELECTED);
+    filter.resetFeaturesFilter();
 
-			let newDestination = findAncestor(currentTarget, destinationSelector);
+    if (AppModel.state.selectedCities.length) {
+      this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+    }
+  }
 
-			if (newDestination) {
-				return newDestination;
-			} else {
-				return false;
-			}
-		}
+  transferItem (avatar, evt) {
+    let city = AppModel.state.selectedCity;
+    let destination = avatar._currentTargetElem;
+    let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
-		return currentTarget;
-	}
+    if (AppModel.isTransferToAnotherList) {
+      let item = new ListItemView(city);
 
-	resetBaseFilters () {
-		AppModel.resetFilters(ListType.BASE);
-		filter.resetBaseFilters();
+      item.marker = city.listItem.marker;
 
-		this.renderList(AppModel.cities, containerForCities, ListType.BASE);
-	}
+      destination = this.getDestination(destination, 'cities');
+      destination.appendChild(item.elem);
 
-	resetSelectedFilters () {
-		AppModel.resetFilters(ListType.SELECTED);
-		filter.resetFeaturesFilter();
+      item.showPopup = this.showPopup.bind(this, item);
+      item.bindEvents();
 
-		if (AppModel.state.selectedCities.length) {
-			this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-		}
-	}
+      city.listItem.removeItem();
 
-	transferItem (avatar, evt) {
-		let city = AppModel.state.selectedCity;
-		let destination = avatar._currentTargetElem;
-		let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+      let dropList = this.findDropTarget(evt)._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
-		if (AppModel.isTransferToAnotherList) {
+      AppModel.updateSelectedCityDOMelem(item.elem);
 
-			let item = new ListItemView(city);
+      switch (dropList) {
+        case 'cities':
+          baseListError && baseListError.removeItem();
+          break;
+        case 'cities-selected':
+          selectedListError && selectedListError.removeItem();
+          break;
+      }
 
-			item.marker = city.listItem.marker;
+      AppModel.updateRenderedList(city, dropList, currentList);
 
-			destination = this.getDestination(destination, 'cities');
-			destination.appendChild(item.elem);
+      if (AppModel.state.renderedBaseCities.length === 0) {
+        this.resetBaseFilters();
+      }
 
-			item.showPopup = this.showPopup.bind(this, item);
-			item.bindEvents();
+      if (AppModel.state.renderedSelectedCities.length === 0) {
+        this.resetSelectedFilters();
 
-			city.listItem.removeItem();
+        if (AppModel.state.selectedCities.length) {
+          this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+        }
+      }
+    } else {
+      destination = this.getDestination(destination, 'list-item');
+      let replacedItem = AppModel.getCityObject(destination, currentList);
 
-			let dropList = this.findDropTarget(evt)._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+      if (replacedItem === city || !replacedItem) {
+        return false;
+      }
 
-			AppModel.updateSelectedCityDOMelem(item.elem);
+      AppModel.swapItems(currentList, city, replacedItem);
 
-			switch (dropList) {
-				case 'cities':
-					baseListError && baseListError.removeItem();
-					break;
-				case 'cities-selected':
-					selectedListError && selectedListError.removeItem();
-					break;
-			}
+      let temp = document.createElement('div');
+      city.listItem.elem.parentNode.insertBefore(temp, city.listItem.elem);
+      replacedItem.listItem.elem.parentNode.insertBefore(city.listItem.elem, replacedItem.listItem.elem);
+      temp.parentNode.insertBefore(replacedItem.listItem.elem, temp);
+      temp.parentNode.removeChild(temp);
+    }
 
-			AppModel.updateRenderedList(city, dropList, currentList);
+    avatar.onDragEnd();
+  }
 
-			if (AppModel.state.renderedBaseCities.length === 0) {
-				this.resetBaseFilters();
-			}
+  onMouseDown (evt) {
+    if (evt.which !== 1) { // не левой кнопкой
+      return false;
+    }
 
-			if (AppModel.state.renderedSelectedCities.length === 0) {
+    dragZone = this.findDragZone(evt);
 
-				this.resetSelectedFilters();
+    if (!dragZone) {
+      return;
+    }
 
-				if (AppModel.state.selectedCities.length) {
-					this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-				}
-			}
+    // запомним, что элемент нажат на текущих координатах pageX/pageY
+    downX = evt.pageX;
+    downY = evt.pageY;
 
-		} else {
+    return false;
+  }
 
-			destination = this.getDestination(destination, 'list-item');
-			let replacedItem = AppModel.getCityObject(destination, currentList);
+  onMouseMove (evt) {
+    if (!dragZone) return;
 
-			if (replacedItem === city || !replacedItem) {
-				return false;
-			}
+    if (!avatar) {
+      if (Math.abs(evt.pageX - downX) < 3 && Math.abs(evt.pageY - downY) < 3) {
+        return;
+      }
 
-			AppModel.swapItems(currentList, city, replacedItem);
+      avatar = dragZone.onDragStart(downX, downY, evt);
 
-			let temp = document.createElement('div');
-			city.listItem.elem.parentNode.insertBefore(temp, city.listItem.elem);
-			replacedItem.listItem.elem.parentNode.insertBefore(city.listItem.elem, replacedItem.listItem.elem);
-			temp.parentNode.insertBefore(replacedItem.listItem.elem, temp);
-			temp.parentNode.removeChild(temp);
+      if (!avatar) {
+        this.cleanUp();
+        return;
+      }
 
-		}
+      let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
-		avatar.onDragEnd();
-	}
+      let cityObj = AppModel.getCityObject(avatar._dragZoneElem, currentList);
+      AppModel.passCityToTheModel(cityObj);
+    }
 
-	onMouseDown (evt) {
-		if (evt.which != 1) { // не левой кнопкой
-			return false;
-		}
+    avatar.onDragMove(evt);
 
-		dragZone = this.findDragZone(evt);
+    var newDropTarget = this.findDropTarget(evt);
 
-		if (!dragZone) {
-			return;
-		}
+    if (newDropTarget !== dropTarget) {
+      dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, evt);
+      newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, evt);
 
-		// запомним, что элемент нажат на текущих координатах pageX/pageY
-		downX = evt.pageX;
-		downY = evt.pageY;
+      if (newDropTarget && dropTarget) {
+        AppModel.setCitySelected();
+        this.transferItem(avatar, evt);
+      }
+    }
 
-		return false;
-	}
+    dropTarget = newDropTarget;
 
-	onMouseMove (evt) {
-		if (!dragZone) return;
+    dropTarget && dropTarget.onDragMove(avatar, evt);
 
-		if (!avatar) {
-			if (Math.abs(evt.pageX - downX) < 3 && Math.abs(evt.pageY - downY) < 3) {
-				return;
-			}
+    return false;
+  }
 
-			avatar = dragZone.onDragStart(downX, downY, evt);
+  onMouseUp (evt) {
+    if (evt.which !== 1) { // не левой кнопкой
+      return false;
+    }
 
-			if (!avatar) {
-				this.cleanUp();
-				return;
-			}
+    if (avatar) {
+      if (dropTarget) {
+        dropTarget.onDragEnd(avatar, evt);
 
-			let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
+        if (AppModel.isTransferToAnotherList) {
+          AppModel.endTransfer();
+        } else {
+          this.transferItem(avatar, evt);
+        }
+      } else {
+        avatar.onDragCancel();
+      }
+    }
 
-			let cityObj = AppModel.getCityObject(avatar._dragZoneElem, currentList);
-			AppModel.passCityToTheModel(cityObj);
-		}
+    this.cleanUp();
+  }
 
-		avatar.onDragMove(evt);
+  cleanUp () {
+    dragZone = avatar = dropTarget = null;
+  }
 
-		var newDropTarget = this.findDropTarget(evt);
+  findDragZone (evt) {
+    var elem = evt.target;
+    while (elem !== document && !elem.dragZone) {
+      elem = elem.parentNode;
+    }
+    return elem.dragZone;
+  }
 
-		if (newDropTarget != dropTarget) {
+  findDropTarget () {
+    var elem = avatar.getTargetElem();
 
-			dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, evt);
-			newDropTarget && newDropTarget.onDragEnter(dropTarget, avatar, evt);
+    while (elem !== document && !elem.dropTarget) {
+      elem = elem.parentNode;
+    }
 
-			if (newDropTarget && dropTarget) {
+    if (!elem.dropTarget) {
+      return null;
+    }
 
-				AppModel.setCitySelected();
-				this.transferItem(avatar, evt);
+    return elem.dropTarget;
+  }
 
-			}
+  bindHandlers () {
+    App.onMouseMove = this.onMouseMove.bind(this);
+    App.onMouseDown = this.onMouseDown.bind(this);
+    App.onMouseUp = this.onMouseUp.bind(this);
 
-		}
-
-		dropTarget = newDropTarget;
-
-		dropTarget && dropTarget.onDragMove(avatar, evt);
-
-		return false;
-	}
-
-	onMouseUp (evt) {
-		if (evt.which != 1) { // не левой кнопкой
-			return false;
-		}
-
-		if (avatar) {
-
-			if (dropTarget) {
-
-				dropTarget.onDragEnd(avatar, evt);
-
-				if (AppModel.isTransferToAnotherList) {
-					AppModel.endTransfer();
-				} else {
-					this.transferItem(avatar, evt);
-				}
-
-			} else {
-				avatar.onDragCancel();
-			}
-
-		}
-
-		this.cleanUp();
-	}
-
-	cleanUp () {
-		dragZone = avatar = dropTarget = null;
-	}
-
-	findDragZone (evt) {
-		var elem = evt.target;
-		while (elem != document && !elem.dragZone) {
-			elem = elem.parentNode;
-		}
-		return elem.dragZone;
-	}
-
-	findDropTarget () {
-		var elem = avatar.getTargetElem();
-
-		while (elem != document && !elem.dropTarget) {
-			elem = elem.parentNode;
-		}
-
-		if (!elem.dropTarget) {
-			return null;
-		}
-
-		return elem.dropTarget;
-	}
-
-	bindHandlers () {
-		App.onMouseMove = this.onMouseMove.bind(this);
-		App.onMouseDown = this.onMouseDown.bind(this);
-		App.onMouseUp = this.onMouseUp.bind(this);
-
-		App.bindEvents();
-	}
+    App.bindEvents();
+  }
 }
 
 export default new Presenter();

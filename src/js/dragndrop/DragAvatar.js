@@ -9,80 +9,80 @@ import { getElementUnderClientXY } from '../utils';
  */
 
 export default class DragAvatar {
-	constructor(dragZone, dragElem) {
-		/** "родительская" зона переноса */
-		this._dragZone = dragZone;
+  constructor (dragZone, dragElem) {
+    /** "родительская" зона переноса */
+    this._dragZone = dragZone;
 
-		/**
-		 * подэлемент родительской зоны, к которому относится аватар
-		 * по умолчанию - элемент, соответствующий всей зоне
-		 * может быть уточнен в initFromEvent
-		 */
-		this._dragZoneElem = dragElem;
+    /**
+     * подэлемент родительской зоны, к которому относится аватар
+     * по умолчанию - элемент, соответствующий всей зоне
+     * может быть уточнен в initFromEvent
+     */
+    this._dragZoneElem = dragElem;
 
-		/**
-		 * Сам элемент аватара, который будет носиться по экрану.
-		 * Инициализуется в initFromEvent
-		 */
-		this._elem = dragElem;
-	}
+    /**
+     * Сам элемент аватара, который будет носиться по экрану.
+     * Инициализуется в initFromEvent
+     */
+    this._elem = dragElem;
+  }
 
-	/**
-	 * Инициализовать this._elem и позиционировать его
-	 * При необходимости уточнить this._dragZoneElem
-	 * @param downX Координата X нажатия мыши
-	 * @param downY Координата Y нажатия мыши
-	 * @param event Текущее событие мыши
-	 */
-	initFromEvent(downX, downY, event) {
-		/* override */
-	}
+  /**
+   * Инициализовать this._elem и позиционировать его
+   * При необходимости уточнить this._dragZoneElem
+   * @param downX Координата X нажатия мыши
+   * @param downY Координата Y нажатия мыши
+   * @param event Текущее событие мыши
+   */
+  initFromEvent (downX, downY, event) {
+    /* override */
+  }
 
-	/**
-	 * Возвращает информацию о переносимом элементе для DropTarget
-	 * @param event
-	 */
-	getDragInfo(event) {
-		// тут может быть еще какая-то информация, необходимая для обработки конца или процесса переноса
-		return {
-			elem: this._elem,
-			dragZoneElem: this._dragZoneElem,
-			dragZone: this._dragZone
-		};
-	}
+  /**
+   * Возвращает информацию о переносимом элементе для DropTarget
+   * @param event
+   */
+  getDragInfo (event) {
+    // тут может быть еще какая-то информация, необходимая для обработки конца или процесса переноса
+    return {
+      elem: this._elem,
+      dragZoneElem: this._dragZoneElem,
+      dragZone: this._dragZone
+    };
+  }
 
-	/**
-	 * Возвращает текущий самый глубокий DOM-элемент под this._elem
-	 * Приватное свойство _currentTargetElem обновляется при каждом передвижении
-	 */
-	getTargetElem() {
-		return this._currentTargetElem;
-	}
+  /**
+   * Возвращает текущий самый глубокий DOM-элемент под this._elem
+   * Приватное свойство _currentTargetElem обновляется при каждом передвижении
+   */
+  getTargetElem () {
+    return this._currentTargetElem;
+  }
 
-	/**
-	 * При каждом движении мыши перемещает this._elem
-	 * и записывает текущий элемент под this._elem в _currentTargetElem
-	 * @param event
-	 */
-	onDragMove(event) {
-		this._elem.style.left = event.pageX - this._shiftX + 'px';
-		this._elem.style.top = event.pageY - this._shiftY + 'px';
+  /**
+   * При каждом движении мыши перемещает this._elem
+   * и записывает текущий элемент под this._elem в _currentTargetElem
+   * @param event
+   */
+  onDragMove (event) {
+    this._elem.style.left = event.pageX - this._shiftX + 'px';
+    this._elem.style.top = event.pageY - this._shiftY + 'px';
 
-		this._currentTargetElem = getElementUnderClientXY(this._elem, event.clientX, event.clientY);
-	}
+    this._currentTargetElem = getElementUnderClientXY(this._elem, event.clientX, event.clientY);
+  }
 
-	/**
-	 * Действия с аватаром, когда перенос не удался
-	 * Например, можно вернуть элемент обратно или уничтожить
-	 */
-	onDragCancel() {
-		/* override */
-	}
+  /**
+   * Действия с аватаром, когда перенос не удался
+   * Например, можно вернуть элемент обратно или уничтожить
+   */
+  onDragCancel () {
+    /* override */
+  }
 
-	/**
-	 * Действия с аватаром после успешного переноса
-	 */
-	onDragEnd() {
-		/* override */
-	}
+  /**
+   * Действия с аватаром после успешного переноса
+   */
+  onDragEnd () {
+    /* override */
+  }
 }

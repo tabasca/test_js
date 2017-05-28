@@ -2,47 +2,32 @@ import DropTarget from './DropTarget';
 import { isDescendant, findAncestor } from '../utils';
 
 export default class ListDropTarget extends DropTarget {
-	constructor(elem) {
-		super(elem);
-	}
+  _getTargetElem (avatar, event) {
+    this._target = avatar.getTargetElem();
 
-	_showHoverIndication() {
-		this._targetElem && this._targetElem.classList.add('hover');
-	}
+    var elemToMove = avatar.getDragInfo(event).dragZoneElem;
 
-	_hideHoverIndication() {
-		this._targetElem && this._targetElem.classList.remove('hover');
-	}
+    // запретить перенос в самого себя
+    if (this._target === elemToMove || isDescendant(elemToMove, this._target)) {
+      return false;
+    }
 
-	_getTargetElem(avatar, event) {
-		this._target = avatar.getTargetElem();
+    // разрешить перенос, если у элемента-цели есть родитель с нужным классом
+    if (!this._target.classList.contains('list-item')) {
+      this._target = findAncestor(this._target, 'list-item');
+    }
 
-		var elemToMove = avatar.getDragInfo(event).dragZoneElem;
+    return this._target;
+  }
 
-		// запретить перенос в самого себя
-		if (this._target == elemToMove || isDescendant(elemToMove, this._target)) {
-			return false;
-		}
+  get target () {
+    return this._target;
+  }
 
-		//разрешить перенос, если у элемента-цели есть родитель с нужным классом
-		if (!this._target.classList.contains('list-item')) {
-			this._target = findAncestor(this._target, 'list-item');
-		}
-
-		return this._target;
-	}
-
-	get target() {
-		return this._target;
-	}
-
-	onDragEnd(avatar, event) {
-		if (!this._targetElem) {
-			// перенос закончился вне подходящей точки приземления
-			avatar.onDragCancel();
-			return;
-		}
-
-		this._hideHoverIndication();
-	}
+  onDragEnd (avatar, event) {
+    if (!this._targetElem) {
+      // перенос закончился вне подходящей точки приземления
+      avatar.onDragCancel();
+    }
+  }
 }

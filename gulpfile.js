@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable */
+
 const del = require('del');
 const gulp = require('gulp');
 const plumber = require('gulp-plumber');
