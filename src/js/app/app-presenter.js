@@ -284,12 +284,12 @@ class Presenter {
 			AppModel.updateRenderedList(city, dropList, currentList);
 
 			if (AppModel.state.renderedBaseCities.length === 0) {
-				filter.resetBaseFilters();
+				this.resetBaseFilters();
 			}
 
 			if (AppModel.state.renderedSelectedCities.length === 0) {
 
-				filter.resetFeaturesFilter();
+				this.resetSelectedFilters();
 
 				if (AppModel.state.selectedCities.length) {
 					this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);

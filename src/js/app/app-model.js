@@ -169,6 +169,7 @@ export default class Model {
 	}
 
 	filterByFeature (features) {
+
 		if (!features.length) {
 			this._state.filteredSelectedCities = this._state.selectedCities;
 			return false;
