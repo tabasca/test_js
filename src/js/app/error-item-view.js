@@ -15,6 +15,10 @@ export default class ErrorItemView {
 		return this._elem;
 	}
 
+	set onResetFiltersBtnClick(handler) {
+		return this. _onResetFiltersBtnClick = handler;
+	}
+
 	getMarkup () {
 		return `<div class="error-message">
 				  <p>Ни один из вариантов не подходит под выбранные фильтры, попробуйте <span class="error-message-reset" role="button">сбросить фильтры</span> или смягчить условия поиска.</p>
@@ -23,5 +27,14 @@ export default class ErrorItemView {
 
 	removeItem () {
 		this._elem.remove();
+		this.unbindEvents();
+	}
+
+	bindEvents () {
+		this.btnToResetFilters.addEventListener('click', this._onResetFiltersBtnClick);
+	}
+
+	unbindEvents () {
+		this.btnToResetFilters.removeEventListener('click', this._onResetFiltersBtnClick);
 	}
 };

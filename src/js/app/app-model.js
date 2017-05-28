@@ -40,6 +40,19 @@ export default class Model {
 		}
 	}
 
+	resetFilters (listType) {
+		switch (listType) {
+			case ListType.BASE:
+				this._state.activeBaseFilter = null;
+				this._state.filteredBaseCities = [];
+				break;
+			case ListType.SELECTED:
+				this._state.activeSelectedFilter = [];
+				this._state.filteredSelectedCities = [];
+				break;
+		}
+	}
+
 	getCityObject (elem, list) {
 		let cityObj;
 

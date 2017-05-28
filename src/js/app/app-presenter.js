@@ -85,6 +85,8 @@ class Presenter {
 				if (!cities.length) {
 					baseListError = new ErrorItemView();
 					container.appendChild(baseListError.elem);
+					baseListError.onResetFiltersBtnClick = this.resetBaseFilters.bind(this);
+					baseListError.bindEvents();
 				}
 				break;
 			case ListType.SELECTED:
@@ -96,6 +98,8 @@ class Presenter {
 				if (!cities.length && AppModel.state.activeSelectedFilter.length) {
 					selectedListError = new ErrorItemView();
 					container.appendChild(selectedListError.elem);
+					selectedListError.onResetFiltersBtnClick = this.resetSelectedFilters.bind(this);
+					selectedListError.bindEvents();
 				}
 				break;
 		}
@@ -210,6 +214,20 @@ class Presenter {
 		}
 
 		return currentTarget;
+	}
+
+	resetBaseFilters () {
+		AppModel.resetFilters(ListType.BASE);
+
+		this.renderList(AppModel.cities, containerForCities, ListType.BASE);
+	}
+
+	resetSelectedFilters () {
+		AppModel.resetFilters(ListType.SELECTED);
+
+		if (AppModel.state.selectedCities.length) {
+			this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+		}
 	}
 
 	transferItem (avatar, evt) {
