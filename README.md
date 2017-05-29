@@ -29,7 +29,8 @@ $ gulp build
 5. немного модифицировала конфиг еслинта (ругался на "лишние" точки с запятой, на undefined для карты и new для драг-н-дропа)
 
 ### Процесс выполнения
-пункты по ТЗ - на ютубе, рефакторинги - по ссылкам в списке ниже
+пункты по ТЗ - в плейлисте на ютубе, рефакторинги - по ссылкам в списке ниже:
+
 0. initial setup
 1. get data
 2. render data
@@ -55,7 +56,7 @@ $ gulp build
 
 [refactoring5](https://drive.google.com/open?id=0ByNFtwyal457QTFOM2lQU2xpeFU) -- filters rebuilt, state and dragndrop(through lists) modified
 
-[refactoring6]() -- dragndrop(through-across lists) modified
+[refactoring6](https://youtu.be/yPMVmYXQ_qE) -- dragndrop(through-across lists) modified
 
 10. filter selected items by features
 11. error msg for empty results
