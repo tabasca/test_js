@@ -4,11 +4,17 @@ export default class Filter {
     this.descFilterBtn = document.getElementById('cities-sort-desc');
     this.searchInput = document.querySelector('.cities-filters-name');
     this.featureFilters = document.querySelectorAll('[name="cities-features"]');
+    this.convertTemperatureBtn = document.querySelector('#tumbler');
   }
 
   set setFilterEnabled (handler) {
     this._setFilterEnabled = handler;
     return this._setFilterEnabled;
+  }
+
+  set convertTemperature (handler) {
+    this._convertTemperature = handler;
+    return this._convertTemperature;
   }
 
   bindEvents () {
@@ -21,6 +27,8 @@ export default class Filter {
     for (let i = 0; i < this.featureFilters.length; i++) {
       that.featureFilters[i].addEventListener('change', that._setFilterEnabled);
     }
+
+    this.convertTemperatureBtn.addEventListener('change', this._convertTemperature);
   }
 
   resetBaseFilters () {
@@ -47,5 +55,7 @@ export default class Filter {
     for (let i = 0; i < this.featureFilters.length; i++) {
       that.featureFilters[i].removeEventListener('change', that._setFilterEnabled);
     }
+
+    this.convertTemperatureBtn.removeEventListener('change', this._convertTemperature);
   }
 }

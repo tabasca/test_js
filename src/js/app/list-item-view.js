@@ -9,6 +9,7 @@ export default class ListItemView {
     if (!this._elem) {
       this.name = this.data.name;
       this.temperature = this.data.weather;
+      this.temperatureInFarenheit = this.data.temperatureInFarenheit;
       this.featuresArr = this.data.features;
       this.highlightedName = this.data.highlightedName;
 
@@ -81,7 +82,7 @@ export default class ListItemView {
         <div class="list-item-handle"></div>
         <h3 class="list-item-title">
           <span class="list-item-name">${this.highlightedName ? this.highlightedName : this.name}</span>,
-          <span class="list-item-weather">${this.temperature}</span>
+          <span class="list-item-weather">${this.temperatureInFarenheit ? this.temperatureInFarenheit : this.temperature}</span>
         </h3>
         <div class="list-item-features">
           ${this.getFeatures(this.featuresArr)}
@@ -93,7 +94,7 @@ export default class ListItemView {
     return `<div class="popup" role="popup" aria-labellebby="popup-title">
           <h3 class="popup-title" id="popup-title">
             <span class="popup-title-name">${this.name}</span>,
-            <span class="popup-title-weather">${this.temperature}</span>
+            <span class="popup-title-weather">${this.temperatureInFarenheit ? this.temperatureInFarenheit : this.temperature}</span>
           </h3>
           <div class="popup-features">
             ${this.getFeatures(this.featuresArr)}

@@ -30,12 +30,7 @@ class Presenter {
     AppModel = new Model(App.data);
     AppMap = new Map();
 
-    if (AppModel.state.selectedCities.length) {
-      this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-    }
-
-    this.renderList(AppModel.cities, containerForCities, ListType.BASE);
-
+    this.renderApp();
     this.initFilters();
 
     this.bindHandlers = this.bindHandlers.bind(this);
@@ -139,8 +134,32 @@ class Presenter {
     filter = new Filter();
 
     filter.setFilterEnabled = this.setFilterEnabled.bind(this);
+    filter.convertTemperature = this.convertTemperature.bind(this);
 
     filter.bindEvents();
+  }
+
+  renderApp () {
+    if (filter) {
+      this.resetBaseFilters();
+      this.resetSelectedFilters();
+    }
+
+    if (AppModel.state.selectedCities.length) {
+      this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+    }
+
+    this.renderList(AppModel.cities, containerForCities, ListType.BASE);
+  }
+
+  convertTemperature (evt) {
+    if (evt.target.checked) {
+      AppModel.convertCelsiusToFahrenheit();
+    } else {
+      AppModel.convertFarenheitToCelcius();
+    }
+
+    this.renderApp();
   }
 
   setFilterEnabled (evt) {

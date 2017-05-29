@@ -183,6 +183,38 @@ export default class Model {
     city.highlightedName = null;
   }
 
+  convertCelsiusToFahrenheit () {
+    if (this._state.selectedCities.length) {
+      this._state.selectedCities.map(function (city) {
+        let temp = city.weather ? city.weather.replace('ºC', '') : null;
+
+        city.temperatureInFarenheit = +temp * 9 / 5 + 32 + 'ºF';
+      });
+    }
+
+    if (this._baseCities.length) {
+      this._baseCities.map(function (city) {
+        let temp = city.weather ? city.weather.replace('ºC', '') : null;
+
+        city.temperatureInFarenheit = +temp * 9 / 5 + 32 + 'ºF';
+      });
+    }
+  }
+
+  convertFarenheitToCelcius () {
+    if (this._state.selectedCities.length) {
+      this._state.selectedCities.map(function (city) {
+        city.temperatureInFarenheit = null;
+      });
+    }
+
+    if (this._baseCities.length) {
+      this._baseCities.map(function (city) {
+        city.temperatureInFarenheit = null;
+      });
+    }
+  }
+
   filterByFeature (features) {
     if (!features.length) {
       this._state.filteredSelectedCities = this._state.selectedCities;
