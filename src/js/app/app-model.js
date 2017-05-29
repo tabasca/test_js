@@ -153,15 +153,34 @@ export default class Model {
     this._state.filteredBaseCities = [];
 
     if (!text.length) {
-      this._state.filteredBaseCities = this._state.renderedBaseCities;
+      this._state.filteredBaseCities = this._baseCities;
       return;
     }
 
     this._baseCities.map(function (city) {
-      if (city.listItem.name.toLowerCase().indexOf(text.toLowerCase()) > -1) {
-        that._state.filteredBaseCities.push(city);
+      let cityToCheck = completeAssign({}, city);
+      if (cityToCheck.listItem.name.toLowerCase().indexOf(text.toLowerCase()) > -1) {
+        that.highlightTextOnSearch(cityToCheck, text);
+        that._state.filteredBaseCities.push(cityToCheck);
       }
     });
+  }
+
+  highlightTextOnSearch (city, text) {
+    let elemToHighlight = city.listItem.elem.querySelector('.list-item-name');
+
+    let textToSearch = city.name;
+    let index = textToSearch.toLowerCase().indexOf(text.toLowerCase());
+    if (index >= 0) {
+      textToSearch = textToSearch.substring(0, index) + "<span class='highlight'>" + textToSearch.substring(index, index + text.length) + '</span>' + textToSearch.substring(index + text.length);
+      elemToHighlight.innerHTML = textToSearch;
+    }
+
+    city.highlightedName = textToSearch;
+  }
+
+  unhighlightText (city) {
+    city.highlightedName = null;
   }
 
   filterByFeature (features) {

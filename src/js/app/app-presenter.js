@@ -249,10 +249,15 @@ class Presenter {
 
   transferItem (avatar, evt) {
     let city = AppModel.state.selectedCity;
+
     let destination = avatar._currentTargetElem;
     let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
     if (AppModel.isTransferToAnotherList) {
+      if (city.highlightedName) {
+        AppModel.unhighlightText(city);
+      }
+
       let item = new ListItemView(city);
 
       item.marker = city.listItem.marker;

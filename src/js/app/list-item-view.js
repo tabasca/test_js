@@ -10,6 +10,7 @@ export default class ListItemView {
       this.name = this.data.name;
       this.temperature = this.data.weather;
       this.featuresArr = this.data.features;
+      this.highlightedName = this.data.highlightedName;
 
       this._elem = getElementFromTemplate(this.getMarkup());
 
@@ -79,7 +80,7 @@ export default class ListItemView {
     return `<article class="list-item">
         <div class="list-item-handle"></div>
         <h3 class="list-item-title">
-          <span class="list-item-name">${this.name}</span>,
+          <span class="list-item-name">${this.highlightedName ? this.highlightedName : this.name}</span>,
           <span class="list-item-weather">${this.temperature}</span>
         </h3>
         <div class="list-item-features">

@@ -230,3 +230,8 @@ input[type=radio]:checked + .radiogroup-item {
 .item-hovered {
   background-color: antiquewhite;
 }
+
+.highlight {
+  background: yellow;
+  font-weight: 500;
+}
