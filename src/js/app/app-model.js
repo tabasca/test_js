@@ -88,7 +88,7 @@ export default class Model {
     }
   }
 
-  updateListItems (item, listType, isInitiatedByFilter, isReset) {
+  updateListItems (item, listType, isInitiatedByFilter, isReset, isListItemsNeeded) {
     let updateList = function (list) {
       if (list.every(listItem => listItem.id !== item.id)) {
         list.push(item);
@@ -107,6 +107,7 @@ export default class Model {
       case ListType.BASE:
         !isReset && !isInitiatedByFilter && updateList(this._state.baseList.listItems);
         updateList(this._state.baseList.renderedListItems);
+        isListItemsNeeded && updateList(this._state.baseList.listItems);
         break;
       case ListType.SELECTED:
         !isReset && !isInitiatedByFilter && updateList(this._state.selectedList.listItems);
@@ -269,9 +270,6 @@ export default class Model {
 
         this.filterByFeatures(this._state.selectedList.activeFilter);
         break;
-
-      default:
-
     }
   }
 

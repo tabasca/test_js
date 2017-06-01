@@ -45,7 +45,7 @@ class Presenter {
     AppModel.clearListItems(listType);
   }
 
-  renderList (cities, container, listType, isInitiatedByFilter, isReset) {
+  renderList (cities, container, listType, isInitiatedByFilter, isReset, isListItemsNeeded) {
     this.clearList(listType);
 
     let that = this;
@@ -82,7 +82,7 @@ class Presenter {
 
     cities.map(function (city) {
       let elem = that.createCityElem(city, container, listType, isInitiatedByFilter, isReset, counter);
-      AppModel.updateListItems(elem, listType, isInitiatedByFilter, isReset);
+      AppModel.updateListItems(elem, listType, isInitiatedByFilter, isReset, isListItemsNeeded);
       AppModel.updateRenderedList(city, listType, isInitiatedByFilter, isReset);
       counter++;
     });
@@ -124,7 +124,6 @@ class Presenter {
   }
 
   renderApp (reset) {
-    let that = this;
     if (reset) {
       if (filter) {
         this.resetBaseFilters();
@@ -135,10 +134,12 @@ class Presenter {
       }
     }
     let isReset = false;
+    let isInitiatedByFilter = false;
 
     if (AppModel.localStorageData) {
       AppModel.updateState();
       isReset = true;
+      isInitiatedByFilter = false;
     }
 
     if (AppModel.state.dataInFahrenheit) {
@@ -146,34 +147,24 @@ class Presenter {
     }
 
     if (AppModel.state.selectedList.cities.length) {
-      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isReset);
+      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isInitiatedByFilter, isReset);
     }
 
-    this.renderList(AppModel.state.baseList.cities.length ? AppModel.state.baseList.cities : AppModel.state.cities, containerForCities, ListType.BASE, isReset);
-
-    let counter = 0;
-
     if (AppModel.state.baseList.activeFilter) {
-      AppModel.state.baseList.cities.map(function (city) {
-        let elem = that.createCityElem(city, containerForCities, ListType.BASE, false, false, counter);
-        that.updateListItems(elem, ListType.BASE, false, true);
-        counter++;
-      });
+      let isListItemsNeeded = true;
 
-      console.log(AppModel.state.baseList.cities);
-      console.log(AppModel.state.baseList.listItems);
+      this.renderList(AppModel.state.baseList.cities.length ? AppModel.state.baseList.cities : AppModel.state.cities, containerForCities, ListType.BASE, isInitiatedByFilter, isReset, isListItemsNeeded);
 
       let textToFilterBy = AppModel.state.baseList.textToFilterBy;
       filter.updateSearchInputVal(textToFilterBy);
-      this.filterCities(ListType.BASE, AppModel.state.baseList.activeFilter, textToFilterBy, true, false);
-
-      console.log('AFTER FILTER !!!!!!!!!!!!!!: ', AppModel.state.baseList.cities);
-      console.log(AppModel.state.baseList.listItems);
+      this.filterCities(ListType.BASE, AppModel.state.baseList.activeFilter, textToFilterBy, true);
+    } else {
+      this.renderList(AppModel.state.baseList.cities.length ? AppModel.state.baseList.cities : AppModel.state.cities, containerForCities, ListType.BASE, isInitiatedByFilter, isReset);
     }
 
     if (AppModel.state.selectedList.activeFilter.length) {
       filter.updateSelectedFeaturesBtns(AppModel.state.selectedList.activeFilter);
-      this.filterCities(ListType.SELECTED, AppModel.state.selectedList.activeFilter, null, true, true);
+      this.filterCities(ListType.SELECTED, AppModel.state.selectedList.activeFilter, null, isInitiatedByFilter, isReset);
     }
   }
 
