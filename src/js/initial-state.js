@@ -1,11 +1,23 @@
 export const initialState = {
-  baseCities: [],
-  filteredBaseCities: [],
-  renderedBaseCities: [],
-  selectedCities: [],
-  filteredSelectedCities: [],
-  renderedSelectedCities: [],
-  selectedCity: [],
-  activeBaseFilter: null,
-  activeSelectedFilter: []
+  baseList: {
+    cities: [],
+    filteredCities: [],
+    renderedCities: [],
+    listItems: [],
+    filteredListItems: [],
+    renderedListItems: [],
+    activeFilter: null
+  },
+  selectedList: {
+    cities: [],
+    selectedCities: [],
+    renderedCities: [],
+    listItems: [],
+    filteredListItems: [],
+    renderedListItems: [],
+    activeFilter: []
+  },
+  cities: [],
+  markers: [],
+  selectedCity: []
 };

@@ -15,8 +15,8 @@ import AppView from './app/app-view';
     .then(function (data) {
       App.data = data;
       App.renderApp();
-    })
-    .catch(function (err) {
-      App.showError(err);
     });
+    // .catch(function (err) {
+    //   App.showError(err);
+    // });
 })();

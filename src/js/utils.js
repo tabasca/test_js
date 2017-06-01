@@ -88,8 +88,8 @@ export const sortArr = (arr, sortType) => {
   }
 
   return assignedArr.sort(function (a, b) {
-    let nameA = a.listItem.name.toLowerCase();
-    let nameB = b.listItem.name.toLowerCase();
+    let nameA = a.name.toLowerCase();
+    let nameB = b.name.toLowerCase();
 
     switch (sortType) {
       case FilterType.ASCENDING:
@@ -114,16 +114,6 @@ export const sortArr = (arr, sortType) => {
         return 0;
     }
   });
-};
-
-export const swapItemsInArr = (arr, a, b) => {
-  let aIndex = arr.findIndex(x => x.name === a.name);
-  let bIndex = arr.findIndex(x => x.name === b.name);
-
-  let temp = arr[aIndex];
-
-  arr[aIndex] = arr[bIndex];
-  arr[bIndex] = temp;
 };
 
 export const transformToArr = (obj) => {

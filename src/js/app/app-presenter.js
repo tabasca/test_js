@@ -4,7 +4,7 @@ import ErrorItemView from './error-item-view';
 import Map from './map';
 import Filter from './filter';
 import { ListType, FilterType } from '../meta';
-import { transformToArr, getCoords, getElementFromTemplate, findAncestor } from '../utils';
+import { getCoords, getElementFromTemplate, findAncestor } from '../utils';
 
 // draganddrop in OOP from learnjavascript.ru
 import ListDragZone from '../dragndrop/ListDragZone';
@@ -39,35 +39,15 @@ class Presenter {
   }
 
   clearList (listType = null) {
-    let citiesArr = null;
-
-    switch (listType) {
-      case ListType.BASE:
-        citiesArr = AppModel.state.renderedBaseCities;
-        break;
-      case ListType.SELECTED:
-        citiesArr = AppModel.state.renderedSelectedCities;
-        break;
-
-      default:
-        citiesArr = [];
-        return false;
-    }
-
-    citiesArr = transformToArr(citiesArr);
-
-    citiesArr.map(function (city) {
-      city.listItem.removeItem();
-      city.marker.classList.add('marker-invalid');
-    });
-
     AppModel.clearRenderedArr(listType);
+    AppModel.clearListItems(listType);
   }
 
-  renderList (cities, container, listType) {
+  renderList (cities, container, listType, isInitiatedByFilter, isReset) {
     this.clearList(listType);
 
     let that = this;
+    let counter = 0;
 
     switch (listType) {
       case ListType.BASE:
@@ -89,7 +69,7 @@ class Presenter {
           selectedListError = null;
         }
 
-        if (!cities.length && AppModel.state.activeSelectedFilter.length) {
+        if (!cities.length && AppModel.state.selectedList.activeFilter.length) {
           selectedListError = new ErrorItemView();
           container.appendChild(selectedListError.elem);
           selectedListError.onResetFiltersBtnClick = this.resetSelectedFilters.bind(this);
@@ -100,33 +80,29 @@ class Presenter {
 
     cities.map(function (city) {
       let item = new ListItemView(city);
-
+      let marker;
       container.appendChild(item.elem);
 
-      if (!city.marker) {
+      AppModel.setCityId(city, counter);
+
+      if (AppModel.state.markers.every(marker => marker.id !== city.id)) {
         AppMap.addMarker(city);
-        item.marker = AppMap._marker._icon;
-        city.marker = item.marker;
-      } else {
-        item.marker = city.marker;
+        marker = AppMap.marker._icon;
+        AppModel.updateMarkers(marker, city, listType);
       }
 
-      city.marker.classList.remove('marker-invalid');
+      marker = AppModel.getMarker(city.id);
+      item.marker = marker;
+      marker.classList.remove('marker-invalid');
 
       item.showPopup = that.showPopup.bind(that, item);
       item.bindEvents(item);
+      item.id = city.id;
 
-      city.listItem = item;
-      AppModel.updateRenderedList(city, listType);
+      AppModel.updateListItems(item, listType, isInitiatedByFilter, isReset);
+      AppModel.updateRenderedList(city, listType, isInitiatedByFilter, isReset);
 
-      if (AppModel.state.renderedBaseCities.length === 0) {
-        filter.resetBaseFilters();
-      }
-
-      if (AppModel.state.selectedCities.length && AppModel.state.renderedSelectedCities.length === 0) {
-        filter.resetFeaturesFilter();
-        this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-      }
+      counter++;
     });
   }
 
@@ -143,33 +119,36 @@ class Presenter {
     if (filter) {
       this.resetBaseFilters();
       this.resetSelectedFilters();
+      AppModel.popup && this.destroyPopup();
+
+      return false;
     }
 
-    if (AppModel.state.selectedCities.length) {
-      this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+    if (AppModel.state.selectedList.cities.length) {
+      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED);
     }
 
-    this.renderList(AppModel.cities, containerForCities, ListType.BASE);
+    this.renderList(AppModel.state.baseList.cities.length ? AppModel.state.baseList.cities : AppModel.state.cities, containerForCities, ListType.BASE);
   }
 
   convertTemperature (evt) {
     if (evt.target.checked) {
       AppModel.convertCelsiusToFahrenheit();
     } else {
-      AppModel.convertFarenheitToCelcius();
+      AppModel.convertFahrenheitToCelsius();
     }
 
     this.renderApp();
   }
 
   setFilterEnabled (evt) {
-    // evt.preventDefault();
-
     let textToFilterBy = null;
     let container = containerForCities;
 
     let listType = ListType.BASE;
     let filterType = evt.target.value;
+
+    let isInitiatedByFilter = true;
 
     let selectedFlag = false;
 
@@ -197,10 +176,8 @@ class Presenter {
     }
 
     AppModel.filterList(filterType, textToFilterBy);
-
-    let cities = selectedFlag ? AppModel.state.filteredSelectedCities : AppModel.state.filteredBaseCities;
-
-    this.renderList(cities, container, listType);
+    let cities = selectedFlag ? AppModel.state.selectedList.filteredCities : AppModel.state.baseList.filteredCities;
+    this.renderList(cities, container, listType, isInitiatedByFilter);
   }
 
   getMarkerPosition (item) {
@@ -251,18 +228,22 @@ class Presenter {
   }
 
   resetBaseFilters () {
+    let isRenderInitiatedByFilter = false;
+    let isReset = true;
     AppModel.resetFilters(ListType.BASE);
     filter.resetBaseFilters();
 
-    this.renderList(AppModel.cities, containerForCities, ListType.BASE);
+    this.renderList(AppModel.state.baseList.cities, containerForCities, ListType.BASE, isRenderInitiatedByFilter, isReset);
   }
 
   resetSelectedFilters () {
+    let isRenderInitiatedByFilter = false;
+    let isReset = true;
     AppModel.resetFilters(ListType.SELECTED);
     filter.resetFeaturesFilter();
 
-    if (AppModel.state.selectedCities.length) {
-      this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
+    if (AppModel.state.selectedList.cities.length) {
+      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isRenderInitiatedByFilter, isReset);
     }
   }
 
@@ -278,20 +259,18 @@ class Presenter {
       }
 
       let item = new ListItemView(city);
-
-      item.marker = city.listItem.marker;
+      item.marker = AppModel.getMarker(city.id);
 
       destination = this.getDestination(destination, 'cities');
       destination.appendChild(item.elem);
 
       item.showPopup = this.showPopup.bind(this, item);
       item.bindEvents();
+      item.id = city.id;
 
-      city.listItem.removeItem();
+      AppModel.updateListItems(item);
 
       let dropList = this.findDropTarget(evt)._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
-
-      AppModel.updateSelectedCityDOMelem(item.elem);
 
       switch (dropList) {
         case 'cities':
@@ -302,33 +281,33 @@ class Presenter {
           break;
       }
 
-      AppModel.updateRenderedList(city, dropList, currentList);
+      AppModel.updateRenderedList(city);
 
-      if (AppModel.state.renderedBaseCities.length === 0) {
+      if (AppModel.state.baseList.renderedCities.length === 0) {
         this.resetBaseFilters();
       }
 
-      if (AppModel.state.renderedSelectedCities.length === 0) {
+      if (AppModel.state.selectedList.renderedCities.length === 0) {
         this.resetSelectedFilters();
-
-        if (AppModel.state.selectedCities.length) {
-          this.renderList(AppModel.state.selectedCities, containerForSelectedCities, ListType.SELECTED);
-        }
       }
     } else {
       destination = this.getDestination(destination, 'list-item');
-      let replacedItem = AppModel.getCityObject(destination, currentList);
+      let destinationName = destination.querySelector('.list-item-name').innerHTML;
+      let replacedItem = AppModel.getCityObject(destinationName, currentList);
 
       if (replacedItem === city || !replacedItem) {
         return false;
       }
 
-      AppModel.swapItems(currentList, city, replacedItem);
+      AppModel.swapItems(city, replacedItem);
+
+      let currentCityDOMelem = AppModel.getListItem(city, currentList).elem;
+      let replacedCityDOMelem = AppModel.getListItem(replacedItem, currentList).elem;
 
       let temp = document.createElement('div');
-      city.listItem.elem.parentNode.insertBefore(temp, city.listItem.elem);
-      replacedItem.listItem.elem.parentNode.insertBefore(city.listItem.elem, replacedItem.listItem.elem);
-      temp.parentNode.insertBefore(replacedItem.listItem.elem, temp);
+      currentCityDOMelem.parentNode.insertBefore(temp, currentCityDOMelem);
+      replacedCityDOMelem.parentNode.insertBefore(currentCityDOMelem, replacedCityDOMelem);
+      temp.parentNode.insertBefore(replacedCityDOMelem, temp);
       temp.parentNode.removeChild(temp);
     }
 
@@ -370,13 +349,14 @@ class Presenter {
 
       let currentList = avatar._dragZone._elem.classList.contains('cities-selected') ? ListType.SELECTED : ListType.BASE;
 
-      let cityObj = AppModel.getCityObject(avatar._dragZoneElem, currentList);
+      let destinationName = avatar._dragZoneElem.querySelector('.list-item-name').innerHTML;
+      let cityObj = AppModel.getCityObject(destinationName, currentList);
       AppModel.passCityToTheModel(cityObj);
     }
 
     avatar.onDragMove(evt);
 
-    var newDropTarget = this.findDropTarget(evt);
+    let newDropTarget = this.findDropTarget(evt);
 
     if (newDropTarget !== dropTarget) {
       dropTarget && dropTarget.onDragLeave(newDropTarget, avatar, evt);
