@@ -6,7 +6,8 @@ export const initialState = {
     listItems: [],
     filteredListItems: [],
     renderedListItems: [],
-    activeFilter: null
+    activeFilter: null,
+    textToFilterBy: ''
   },
   selectedList: {
     cities: [],
@@ -19,5 +20,6 @@ export const initialState = {
   },
   cities: [],
   markers: [],
-  selectedCity: []
+  selectedCity: [],
+  dataInFahrenheit: false
 };

@@ -37,6 +37,22 @@ export default class Filter {
     this.searchInput.value = '';
   }
 
+  updateSearchInputVal (text) {
+    this.searchInput.value = text;
+  }
+
+  updateSelectedFeaturesBtns (features) {
+    let that = this;
+
+    for (let i = 0; i < this.featureFilters.length; i++) {
+      for (let j = 0; j < features.length; j++) {
+        if (that.featureFilters[i].value === features[j]) {
+          that.featureFilters[i].checked = true;
+        }
+      }
+    }
+  }
+
   resetFeaturesFilter () {
     let that = this;
 

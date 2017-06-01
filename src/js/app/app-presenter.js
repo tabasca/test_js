@@ -18,6 +18,8 @@ let filter;
 let containerForCities = document.getElementById('cities');
 let containerForSelectedCities = document.querySelector('.cities-selected');
 
+let tumbler = document.querySelector('#tumbler');
+
 let dragZone, avatar, dropTarget;
 let downX, downY;
 
@@ -30,8 +32,8 @@ class Presenter {
     AppModel = new Model(App.data);
     AppMap = new Map();
 
-    this.renderApp();
     this.initFilters();
+    this.renderApp();
 
     this.bindHandlers = this.bindHandlers.bind(this);
     this.bindHandlers();
@@ -79,31 +81,37 @@ class Presenter {
     }
 
     cities.map(function (city) {
-      let item = new ListItemView(city);
-      let marker;
-      container.appendChild(item.elem);
-
-      AppModel.setCityId(city, counter);
-
-      if (AppModel.state.markers.every(marker => marker.id !== city.id)) {
-        AppMap.addMarker(city);
-        marker = AppMap.marker._icon;
-        AppModel.updateMarkers(marker, city, listType);
-      }
-
-      marker = AppModel.getMarker(city.id);
-      item.marker = marker;
-      marker.classList.remove('marker-invalid');
-
-      item.showPopup = that.showPopup.bind(that, item);
-      item.bindEvents(item);
-      item.id = city.id;
-
-      AppModel.updateListItems(item, listType, isInitiatedByFilter, isReset);
+      let elem = that.createCityElem(city, container, listType, isInitiatedByFilter, isReset, counter);
+      AppModel.updateListItems(elem, listType, isInitiatedByFilter, isReset);
       AppModel.updateRenderedList(city, listType, isInitiatedByFilter, isReset);
-
       counter++;
     });
+
+    AppModel.setLocalStorageData(AppModel.state);
+  }
+
+  createCityElem (city, container, listType, isInitiatedByFilter, isReset, counter) {
+    let item = new ListItemView(city);
+    let marker;
+    container.appendChild(item.elem);
+
+    AppModel.setCityId(city, counter);
+
+    if (AppModel.state.markers.every(marker => marker.id !== city.id)) {
+      AppMap.addMarker(city);
+      marker = AppMap.marker._icon;
+      AppModel.updateMarkers(marker, city, listType);
+    }
+
+    marker = AppModel.getMarker(city.id);
+    item.marker = marker;
+    marker.classList.remove('marker-invalid');
+
+    item.showPopup = this.showPopup.bind(this, item);
+    item.bindEvents(item);
+    item.id = city.id;
+
+    return item;
   }
 
   initFilters () {
@@ -115,20 +123,58 @@ class Presenter {
     filter.bindEvents();
   }
 
-  renderApp () {
-    if (filter) {
-      this.resetBaseFilters();
-      this.resetSelectedFilters();
-      AppModel.popup && this.destroyPopup();
+  renderApp (reset) {
+    let that = this;
+    if (reset) {
+      if (filter) {
+        this.resetBaseFilters();
+        this.resetSelectedFilters();
+        AppModel.popup && this.destroyPopup();
 
-      return false;
+        return false;
+      }
+    }
+    let isReset = false;
+
+    if (AppModel.localStorageData) {
+      AppModel.updateState();
+      isReset = true;
+    }
+
+    if (AppModel.state.dataInFahrenheit) {
+      tumbler.checked = 'true';
     }
 
     if (AppModel.state.selectedList.cities.length) {
-      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED);
+      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isReset);
     }
 
-    this.renderList(AppModel.state.baseList.cities.length ? AppModel.state.baseList.cities : AppModel.state.cities, containerForCities, ListType.BASE);
+    this.renderList(AppModel.state.baseList.cities.length ? AppModel.state.baseList.cities : AppModel.state.cities, containerForCities, ListType.BASE, isReset);
+
+    let counter = 0;
+
+    if (AppModel.state.baseList.activeFilter) {
+      AppModel.state.baseList.cities.map(function (city) {
+        let elem = that.createCityElem(city, containerForCities, ListType.BASE, false, false, counter);
+        that.updateListItems(elem, ListType.BASE, false, true);
+        counter++;
+      });
+
+      console.log(AppModel.state.baseList.cities);
+      console.log(AppModel.state.baseList.listItems);
+
+      let textToFilterBy = AppModel.state.baseList.textToFilterBy;
+      filter.updateSearchInputVal(textToFilterBy);
+      this.filterCities(ListType.BASE, AppModel.state.baseList.activeFilter, textToFilterBy, true, false);
+
+      console.log('AFTER FILTER !!!!!!!!!!!!!!: ', AppModel.state.baseList.cities);
+      console.log(AppModel.state.baseList.listItems);
+    }
+
+    if (AppModel.state.selectedList.activeFilter.length) {
+      filter.updateSelectedFeaturesBtns(AppModel.state.selectedList.activeFilter);
+      this.filterCities(ListType.SELECTED, AppModel.state.selectedList.activeFilter, null, true, true);
+    }
   }
 
   convertTemperature (evt) {
@@ -138,16 +184,14 @@ class Presenter {
       AppModel.convertFahrenheitToCelsius();
     }
 
-    this.renderApp();
+    this.renderApp(true);
   }
 
   setFilterEnabled (evt) {
     let textToFilterBy = null;
-    let container = containerForCities;
 
     let listType = ListType.BASE;
     let filterType = evt.target.value;
-
     let isInitiatedByFilter = true;
 
     let selectedFlag = false;
@@ -164,7 +208,6 @@ class Presenter {
       case FilterType.FEATURE.sun: case FilterType.FEATURE.cloud: case FilterType.FEATURE.meteor: case FilterType.FEATURE.rain: case FilterType.FEATURE.wind: case FilterType.FEATURE.snow:
         selectedFlag = true;
 
-        container = containerForSelectedCities;
         listType = ListType.SELECTED;
 
         break;
@@ -175,8 +218,13 @@ class Presenter {
         filterType = FilterType.SEARCH;
     }
 
+    this.filterCities(listType, filterType, textToFilterBy, isInitiatedByFilter, selectedFlag);
+  }
+
+  filterCities (listType, filterType, textToFilterBy, isInitiatedByFilter, selectedFlag) {
     AppModel.filterList(filterType, textToFilterBy);
     let cities = selectedFlag ? AppModel.state.selectedList.filteredCities : AppModel.state.baseList.filteredCities;
+    let container = selectedFlag ? containerForSelectedCities : containerForCities;
     this.renderList(cities, container, listType, isInitiatedByFilter);
   }
 
@@ -290,6 +338,8 @@ class Presenter {
       if (AppModel.state.selectedList.renderedCities.length === 0) {
         this.resetSelectedFilters();
       }
+
+      AppModel.setLocalStorageData(AppModel.state);
     } else {
       destination = this.getDestination(destination, 'list-item');
       let destinationName = destination.querySelector('.list-item-name').innerHTML;

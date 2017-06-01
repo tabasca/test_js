@@ -10,12 +10,10 @@ export default class Model {
   constructor (data = [], state = initialState) {
     this._state = completeAssign({}, state);
     this._state.cities = transformToArr(completeAssign({}, data));
-
-    this._state.baseList.cities = this.localStorageData && this.localStorageData.baseList.cities || [];
-    this._state.selectedList.cities = this.localStorageData && this.localStorageData.selectedList.cities || [];
   }
 
-  set localStorageData (data) {
+  setLocalStorageData (data) {
+    LOCAL_STORAGE.setItem('cities', '');
     return LOCAL_STORAGE.setItem('cities', JSON.stringify(data));
   }
 
@@ -29,6 +27,17 @@ export default class Model {
 
   get cities () {
     return this._state.cities;
+  }
+
+  updateState () {
+    this._state = this.localStorageData;
+    this._state.baseList.renderedCities = [];
+    this._state.baseList.renderedListItems = [];
+    this._state.selectedList.renderedCities = [];
+    this._state.selectedList.renderedListItems = [];
+    this._state.baseList.listItems = [];
+    this._state.selectedList.listItems = [];
+    this._state.markers = [];
   }
 
   getMarker (key) {
@@ -263,8 +272,6 @@ export default class Model {
 
       default:
 
-        this._state.baseList.activeFilter = null;
-        this._state.selectedList.activeFilter = [];
     }
   }
 
@@ -284,7 +291,7 @@ export default class Model {
     this._state.selectedList.filteredCities = [];
     this._state.selectedList.filteredListItems = [];
 
-    let appropriateItems = this._state.selectedList.cities;
+    let appropriateItems = this._state.selectedList.renderedCities;
 
     features.forEach(function (feature) {
       that._state.selectedList.filteredCities = appropriateItems.filter(function (city) {
@@ -302,6 +309,8 @@ export default class Model {
     if (!text.length) {
       this._state.baseList.filteredCities = this._state.baseList.cities;
       this._state.baseList.filteredListItems = this._state.baseList.listItems;
+
+      this._state.baseList.textToFilterBy = '';
       return false;
     }
 
@@ -315,6 +324,8 @@ export default class Model {
         that._state.baseList.filteredCities.push(cityToCheck);
       }
     });
+
+    this._state.baseList.textToFilterBy = text;
   }
 
   highlightTextOnSearch (city, text) {
@@ -359,6 +370,9 @@ export default class Model {
         city.temperatureInFahrenheit = +temp * 9 / 5 + 32 + 'ºF';
       });
     }
+
+    this._state.dataInFahrenheit = true;
+    this.setLocalStorageData(this._state);
   }
 
   convertFahrenheitToCelsius () {
@@ -373,6 +387,9 @@ export default class Model {
         city.temperatureInFahrenheit = null;
       });
     }
+
+    this._state.dataInFahrenheit = false;
+    this.setLocalStorageData(this._state);
   }
 
   swapItems (a, b) {
