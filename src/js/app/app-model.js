@@ -112,6 +112,7 @@ export default class Model {
       case ListType.SELECTED:
         !isReset && !isInitiatedByFilter && updateList(this._state.selectedList.listItems);
         updateList(this._state.selectedList.renderedListItems);
+        isListItemsNeeded && updateList(this._state.selectedList.listItems);
         break;
       default:
         !isReset && !isInitiatedByFilter && updateList(this._state.baseList.listItems);

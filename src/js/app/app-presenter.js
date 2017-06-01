@@ -146,10 +146,6 @@ class Presenter {
       tumbler.checked = 'true';
     }
 
-    if (AppModel.state.selectedList.cities.length) {
-      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isInitiatedByFilter, isReset);
-    }
-
     if (AppModel.state.baseList.activeFilter) {
       let isListItemsNeeded = true;
 
@@ -163,8 +159,12 @@ class Presenter {
     }
 
     if (AppModel.state.selectedList.activeFilter.length) {
+      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isInitiatedByFilter, isReset, true);
+
       filter.updateSelectedFeaturesBtns(AppModel.state.selectedList.activeFilter);
-      this.filterCities(ListType.SELECTED, AppModel.state.selectedList.activeFilter, null, isInitiatedByFilter, isReset);
+      this.filterCities(ListType.SELECTED, AppModel.state.selectedList.activeFilter, null, true, true);
+    } else if (AppModel.state.selectedList.cities.length) {
+      this.renderList(AppModel.state.selectedList.cities, containerForSelectedCities, ListType.SELECTED, isInitiatedByFilter, isReset);
     }
   }
 
