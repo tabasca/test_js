@@ -5,7 +5,7 @@ export default class ListDropTarget extends DropTarget {
   _getTargetElem (avatar, event) {
     this._target = avatar.getTargetElem();
 
-    var elemToMove = avatar.getDragInfo(event).dragZoneElem;
+    let elemToMove = avatar.getDragInfo(event).dragZoneElem;
 
     // запретить перенос в самого себя
     if (this._target === elemToMove || isDescendant(elemToMove, this._target)) {

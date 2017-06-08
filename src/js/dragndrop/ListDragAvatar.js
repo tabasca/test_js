@@ -9,11 +9,11 @@ export default class ListDragAvatar extends DragAvatar {
 
     this._dragZoneElem = event.target.parentNode;
 
-    var elem = this._elem = this._dragZoneElem.cloneNode(true);
+    let elem = this._elem = this._dragZoneElem.cloneNode(true);
     elem.className = 'avatar';
 
     // создать вспомогательные свойства shiftX/shiftY
-    var coords = getCoords(this._dragZoneElem);
+    let coords = getCoords(this._dragZoneElem);
     this._shiftX = downX - coords.left;
     this._shiftY = downY - coords.top;
 

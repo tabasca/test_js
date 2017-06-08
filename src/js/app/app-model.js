@@ -122,9 +122,10 @@ export default class Model {
     }
   }
 
-  clearListItems (listType) {
+  clearRenderedArr (listType) {
     switch (listType) {
       case ListType.BASE:
+        this._state.baseList.renderedCities = [];
         this._state.baseList.renderedListItems.map(function (listItem) {
           listItem.removeItem();
           listItem.marker.classList.add('marker-invalid');
@@ -132,22 +133,12 @@ export default class Model {
         this._state.baseList.renderedListItems = [];
         break;
       case ListType.SELECTED:
+        this._state.selectedList.renderedCities = [];
         this._state.selectedList.renderedListItems.map(function (listItem) {
           listItem.removeItem();
           listItem.marker.classList.add('marker-invalid');
         });
         this._state.selectedList.renderedListItems = [];
-        break;
-    }
-  }
-
-  clearRenderedArr (listType) {
-    switch (listType) {
-      case ListType.BASE:
-        this._state.baseList.renderedCities = [];
-        break;
-      case ListType.SELECTED:
-        this._state.selectedList.renderedCities = [];
         break;
     }
   }

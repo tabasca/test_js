@@ -42,14 +42,13 @@ class Presenter {
 
   clearList (listType = null) {
     AppModel.clearRenderedArr(listType);
-    AppModel.clearListItems(listType);
   }
 
   renderList (cities, container, listType, isInitiatedByFilter, isReset, isListItemsNeeded) {
     this.clearList(listType);
 
     let that = this;
-    let counter = 0;
+    let idToSet = 0;
 
     switch (listType) {
       case ListType.BASE:
@@ -81,21 +80,21 @@ class Presenter {
     }
 
     cities.map(function (city) {
-      let elem = that.createCityElem(city, container, listType, isInitiatedByFilter, isReset, counter);
+      let elem = that.createCityElem(city, container, listType, isInitiatedByFilter, isReset, idToSet);
       AppModel.updateListItems(elem, listType, isInitiatedByFilter, isReset, isListItemsNeeded);
       AppModel.updateRenderedList(city, listType, isInitiatedByFilter, isReset);
-      counter++;
+      idToSet++;
     });
 
     AppModel.setLocalStorageData(AppModel.state);
   }
 
-  createCityElem (city, container, listType, isInitiatedByFilter, isReset, counter) {
+  createCityElem (city, container, listType, idToSet) {
     let item = new ListItemView(city);
     let marker;
     container.appendChild(item.elem);
 
-    AppModel.setCityId(city, counter);
+    AppModel.setCityId(city, idToSet);
 
     if (AppModel.state.markers.every(marker => marker.id !== city.id)) {
       AppMap.addMarker(city);
@@ -146,6 +145,7 @@ class Presenter {
       tumbler.checked = 'true';
     }
 
+    // down here is something ugly for localStorage functionality :( Needs to be refactored!!!!
     if (AppModel.state.baseList.activeFilter) {
       let isListItemsNeeded = true;
 
@@ -443,7 +443,7 @@ class Presenter {
   }
 
   findDragZone (evt) {
-    var elem = evt.target;
+    let elem = evt.target;
     while (elem !== document && !elem.dragZone) {
       elem = elem.parentNode;
     }
@@ -451,7 +451,7 @@ class Presenter {
   }
 
   findDropTarget () {
-    var elem = avatar.getTargetElem();
+    let elem = avatar.getTargetElem();
 
     while (elem !== document && !elem.dropTarget) {
       elem = elem.parentNode;
