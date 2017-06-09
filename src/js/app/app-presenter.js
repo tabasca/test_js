@@ -80,7 +80,7 @@ class Presenter {
     }
 
     cities.map(function (city) {
-      let elem = that.createCityElem(city, container, listType, isInitiatedByFilter, isReset, idToSet);
+      let elem = that.createCityElem(city, container, listType, idToSet);
       AppModel.updateListItems(elem, listType, isInitiatedByFilter, isReset, isListItemsNeeded);
       AppModel.updateRenderedList(city, listType, isInitiatedByFilter, isReset);
       idToSet++;
