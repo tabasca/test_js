@@ -329,6 +329,9 @@ class Presenter {
       if (AppModel.state.selectedList.renderedCities.length === 0) {
         this.resetSelectedFilters();
       }
+      if (dropList === 'cities-selected') {
+        AppModel.state.selectedList.cities.length && AppModel.state.selectedList.activeFilter.length && this.filterCities(ListType.SELECTED, null, null, true, true);
+      }
 
       AppModel.setLocalStorageData(AppModel.state);
     } else {

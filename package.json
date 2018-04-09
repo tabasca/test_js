@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "Тестовое задание на позицию JS-разработчика",
   "scripts": {
-    "test": "eslint ."
+    "test": "eslint .",
+    "build": "gulp build",
+    "serve": "gulp serve"
+
   },
   "author": "",
   "devDependencies": {

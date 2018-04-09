@@ -262,6 +262,9 @@ export default class Model {
 
         this.filterByFeatures(this._state.selectedList.activeFilter);
         break;
+      default:
+        this.filterByFeatures(this._state.selectedList.activeFilter);
+        break;
     }
   }
 
@@ -281,7 +284,7 @@ export default class Model {
     this._state.selectedList.filteredCities = [];
     this._state.selectedList.filteredListItems = [];
 
-    let appropriateItems = this._state.selectedList.renderedCities;
+    let appropriateItems = this._state.selectedList.cities;
 
     features.forEach(function (feature) {
       that._state.selectedList.filteredCities = appropriateItems.filter(function (city) {
